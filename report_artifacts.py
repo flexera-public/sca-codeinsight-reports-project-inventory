@@ -47,7 +47,7 @@ def generate_html_report(reportData):
     projectHierarchy = reportData["projectHierarchy"]
     projectData = reportData["projectData"]
     productData = reportData["productData"]
-    
+   
     scriptDirectory = os.path.dirname(os.path.realpath(__file__))
     cssFile =  os.path.join(scriptDirectory, "html-assets/css/revenera_common.css")
     logoImageFile =  os.path.join(scriptDirectory, "html-assets/images/logo_reversed.svg")
@@ -147,14 +147,15 @@ def generate_html_report(reportData):
     #---------------------------------------------------------------------------------------------------
     html_ptr.write("<!-- BEGIN BODY -->\n")  
 
+    if len(projectData) > 1:
 
-    display_simple_project_hierarchy(html_ptr, projectID, baseProjectName, projectHierarchy)
+        display_simple_project_hierarchy(html_ptr, projectID, projectData, projectHierarchy)
 
-    html_ptr.write("<hr class='small'>")
+        html_ptr.write("<hr class='small'>")
 
-    display_product_summary_table(html_ptr, productData, encodedStatusApprovedIcon, encodedStatusRejectedIcon, encodedStatusDraftIcon)
+        display_product_summary_table(html_ptr, productData, encodedStatusApprovedIcon, encodedStatusRejectedIcon, encodedStatusDraftIcon)
 
-    html_ptr.write("<hr class='small'>")
+        html_ptr.write("<hr class='small'>")
 
     display_project_summary_table(html_ptr, projectData, encodedStatusApprovedIcon, encodedStatusRejectedIcon, encodedStatusDraftIcon)
 
@@ -195,6 +196,8 @@ def generate_html_report(reportData):
         componentUrl = inventoryData[inventoryID]["componentUrl"]
         selectedLicenseUrl = inventoryData[inventoryID]["selectedLicenseUrl"]
         inventoryReviewStatus = inventoryData[inventoryID]["inventoryReviewStatus"]
+        inventoryLink = inventoryData[inventoryID]["inventoryLink"]
+        projectLink = inventoryData[inventoryID]["projectLink"]
 
         logger.debug("Reporting for inventory item %s" %inventoryID)
 
@@ -217,8 +220,8 @@ def generate_html_report(reportData):
 
         html_ptr.write("        <tr> \n")
 
-        html_ptr.write("            <td class='text-left'>%s</td>\n" %(projectName))
-        html_ptr.write("            <td class='text-left'><a href='%s/codeinsight/FNCI#myprojectdetails/?id=%s&tab=projectInventory&pinv=%s' target='_blank'>%s</a></td>\n" %(baseURL, projectID, inventoryID, inventoryItemName))
+        html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(projectLink, projectName))
+        html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(inventoryLink, inventoryItemName))
  
 
         if inventoryPriority == "High":
@@ -327,9 +330,9 @@ def encodeImage(imageFile):
         raise
 
 #----------------------------------------------------------------------------------------#
-def display_simple_project_hierarchy(html_ptr, projectID, projectName, projectChildren):
+def display_simple_project_hierarchy(html_ptr, projectID, projectData, projectChildren):
 
-    logger.debug("Entering display_simple_project_hierarchy for %s" %projectName) 
+    logger.debug("Entering display_simple_project_hierarchy for project with ID %s" %projectID) 
 
     importer = DictImporter()
     # Clean up the dictionary for anytree
@@ -340,8 +343,9 @@ def display_simple_project_hierarchy(html_ptr, projectID, projectName, projectCh
 
         projectName = row.node.name
         projectID = row.node.id
+        projectLink = projectData[projectID]["projectLink"]
 
-        html_ptr.write("<pre>%s</pre>%s<br>\n" %(row.pre, projectName))
+        html_ptr.write("<pre>%s</pre><a href='%s' target='_blank'>%s</a><br>\n" %(row.pre, projectLink, projectName))
 
 #----------------------------------------------------------------------------------------#
 def project_sort(projects):
@@ -367,6 +371,7 @@ def display_project_summary_table(html_ptr, projectData, encodedStatusApprovedIc
 
     for project in projectData:
         projectName = projectData[project]["projectName"]
+        projectLink = projectData[project]["projectLink"]
         numApproved = projectData[project]["numApproved"]
         numRejected = projectData[project]["numRejected"] 
         numDraft = projectData[project]["numDraft"] 
@@ -383,7 +388,7 @@ def display_project_summary_table(html_ptr, projectData, encodedStatusApprovedIc
                 
         
         html_ptr.write("        <tr> \n")
-        html_ptr.write("            <td class='text-left'>%s</td>\n" %(projectName))
+        html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(projectLink, projectName))
 
         html_ptr.write("            <td class='text-center text-nowrap' data-sort='%s' >\n" %P1Licenses)
         html_ptr.write("                <span class='btn btn-vuln btn-high'>%s</span>\n" %(P1Licenses))

@@ -79,6 +79,11 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
             inventoryID = inventoryItem["id"]
             inventoryReviewStatus = inventoryItem["inventoryReviewStatus"]
 
+            
+            inventoryLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory&pinv=" + str(inventoryID)
+            projectLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory"
+            
+
             logger.debug("Processing iventory items %s of %s" %(currentItem, totalNumberIventory))
             logger.debug("    %s" %(inventoryItemName))
             
@@ -104,7 +109,9 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
                 "inventoryPriority" : inventoryPriority,
                 "componentUrl" : componentUrl,
                 "selectedLicenseUrl" : selectedLicenseUrl,
-                "inventoryReviewStatus" : inventoryReviewStatus
+                "inventoryReviewStatus" : inventoryReviewStatus,
+                "inventoryLink" : inventoryLink,
+                "projectLink" : projectLink
             }
 
             #############################################
@@ -160,6 +167,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
         projectData[projectID]["numMediumVulnerabilities"] = numMediumVulnerabilities
         projectData[projectID]["numLowVulnerabilities"] = numLowVulnerabilities
         projectData[projectID]["numNoneVulnerabilities"] = numNoneVulnerabilities
+        projectData[projectID]["projectLink"] = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory"
+
 
     # Roll up the project summarys for the full product
     productData = calculate_product_summary(projectData)
