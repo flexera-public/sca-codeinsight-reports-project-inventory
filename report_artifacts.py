@@ -45,6 +45,8 @@ def generate_html_report(reportData):
     baseURL  = reportData["baseURL"]
     inventoryData = reportData["inventoryData"]
     projectHierarchy = reportData["projectHierarchy"]
+    projectData = reportData["projectData"]
+    productData = reportData["productData"]
     
     scriptDirectory = os.path.dirname(os.path.realpath(__file__))
     cssFile =  os.path.join(scriptDirectory, "html-assets/css/revenera_common.css")
@@ -148,6 +150,13 @@ def generate_html_report(reportData):
 
     display_simple_project_hierarchy(html_ptr, projectID, baseProjectName, projectHierarchy)
 
+    html_ptr.write("<hr class='small'>")
+
+    display_product_summary_table(html_ptr, productData, encodedStatusApprovedIcon, encodedStatusRejectedIcon, encodedStatusDraftIcon)
+
+    html_ptr.write("<hr class='small'>")
+
+    display_project_summary_table(html_ptr, projectData, encodedStatusApprovedIcon, encodedStatusRejectedIcon, encodedStatusDraftIcon)
 
     html_ptr.write("<hr class='small'>")
 
@@ -155,7 +164,7 @@ def generate_html_report(reportData):
 
     html_ptr.write("    <thead>\n")
     html_ptr.write("        <tr>\n")
-    html_ptr.write("            <th colspan='8' class='text-center'><h4>%s</h4></th>\n" %baseProjectName) 
+    html_ptr.write("            <th colspan='8' class='text-center'><h4>Inventory Items</h4></th>\n") 
     html_ptr.write("        </tr>\n") 
     html_ptr.write("        <tr>\n") 
     html_ptr.write("            <th style='width: 15%' class='text-center'>PROJECT</th>\n") 
@@ -294,7 +303,18 @@ def generate_html_report(reportData):
 
 
         ''')
+    html_ptr.write('''
+        <script>
+            var table = $('#projectSummaryData').DataTable();
 
+            $(document).ready(function() {
+                table;
+            } );
+
+        </script>
+
+
+        ''')
 
     html_ptr.write("</body>\n") 
     html_ptr.write("</html>\n") 
@@ -338,4 +358,147 @@ def display_simple_project_hierarchy(html_ptr, projectID, projectName, projectCh
 #----------------------------------------------------------------------------------------#
 def project_sort(projects):
     return sorted(projects, key=lambda projects: projects.name)
+
+#----------------------------------------------------------------------------------------#
+def display_project_summary_table(html_ptr, projectData, encodedStatusApprovedIcon, encodedStatusRejectedIcon, encodedStatusDraftIcon):
    
+    html_ptr.write("<table id='projectSummaryData' class='table table-hover table-sm row-border' style='width:90%'>\n")
+
+    html_ptr.write("    <thead>\n")
+    html_ptr.write("        <tr>\n")
+    html_ptr.write("            <th colspan='8' class='text-center'><h4>Project Summary</h4></th>\n") 
+    html_ptr.write("        </tr>\n") 
+    html_ptr.write("        <tr>\n") 
+    html_ptr.write("            <th style='width: 15%' class='text-center'>PROJECT NAME</th>\n") 
+    html_ptr.write("            <th style='width: 10%' class='text-center'>LICENSE PRIORITIES</th>\n") 
+    html_ptr.write("            <th style='width: 15%' class='text-center'>VULNERABILITIES</th>\n")
+    html_ptr.write("            <th style='width: 15%' class='text-center'>REVIEW SUMMARY</th>\n")
+    html_ptr.write("        </tr>\n")
+    html_ptr.write("    </thead>\n")  
+    html_ptr.write("    <tbody>\n")
+
+    for project in projectData:
+        projectName = projectData[project]["projectName"]
+        numApproved = projectData[project]["numApproved"]
+        numRejected = projectData[project]["numRejected"] 
+        numDraft = projectData[project]["numDraft"] 
+        P1Licenses = projectData[project]["P1Licenses"]
+        P2Licenses = projectData[project]["P2Licenses"] 
+        P3Licenses = projectData[project]["P3Licenses"] 
+        NALicenses = projectData[project]["NALicenses"]
+        numTotalVulnerabilities = projectData[project]["numTotalVulnerabilities"]
+        numCriticalVulnerabilities = projectData[project]["numCriticalVulnerabilities"]
+        numHighVulnerabilities = projectData[project]["numHighVulnerabilities"]
+        numMediumVulnerabilities = projectData[project]["numMediumVulnerabilities"]
+        numLowVulnerabilities = projectData[project]["numLowVulnerabilities"]
+        numNoneVulnerabilities = projectData[project]["numNoneVulnerabilities"]
+                
+        
+        html_ptr.write("        <tr> \n")
+        html_ptr.write("            <td class='text-left'>%s</td>\n" %(projectName))
+
+        html_ptr.write("            <td class='text-center text-nowrap' data-sort='%s' >\n" %P1Licenses)
+        html_ptr.write("                <span class='btn btn-vuln btn-high'>%s</span>\n" %(P1Licenses))
+        html_ptr.write("                <span class='btn btn-vuln btn-medium'>%s</span>\n" %(P2Licenses))
+        html_ptr.write("                <span class='btn btn-vuln btn-low'>%s</span>\n" %(P3Licenses))
+        html_ptr.write("                <span class='btn btn-vuln btn-none'>%s</span>\n" %(NALicenses))
+        html_ptr.write("            </td>\n")
+
+
+        html_ptr.write("            <td class='text-center text-nowrap' data-sort='%s' >\n" %numCriticalVulnerabilities)
+        # Write in single line to remove spaces between btn spans
+        if numTotalVulnerabilities > 0:
+            html_ptr.write("                <span class='btn btn-vuln btn-critical'>%s</span>\n" %(numCriticalVulnerabilities))
+            html_ptr.write("                <span class='btn btn-vuln btn-high'>%s</span>\n" %(numHighVulnerabilities))
+            html_ptr.write("                <span class='btn btn-vuln btn-medium'>%s</span>\n" %(numMediumVulnerabilities))
+            html_ptr.write("                <span class='btn btn-vuln btn-low'>%s</span>\n" %(numLowVulnerabilities))
+            html_ptr.write("                <span class='btn btn-vuln btn-none'>%s</span>\n" %(numNoneVulnerabilities))
+        else:
+            html_ptr.write("                <span class='btn btn-vuln btn-no-vulns'>None</span>\n")
+        html_ptr.write("            </td> \n")
+        
+        html_ptr.write("            <td class='text-center text-nowrap' style='color:gray;'>")
+        html_ptr.write("                <img src='data:image/png;base64, %s' width='15px' height='15px' style='margin-top: -2px;'> %s" %(encodedStatusApprovedIcon.decode('utf-8'), numApproved))
+        html_ptr.write("                &nbsp &nbsp \n")
+        html_ptr.write("                <img src='data:image/png;base64, %s' width='15px' height='15px' style='margin-top: -2px;'> %s" %(encodedStatusRejectedIcon.decode('utf-8'), numRejected))
+        html_ptr.write("                &nbsp &nbsp \n")
+        html_ptr.write("                <img src='data:image/png;base64, %s' width='15px' height='15px' style='margin-top: -2px;'> %s" %(encodedStatusDraftIcon.decode('utf-8'), numDraft))
+        html_ptr.write("            </td> \n")
+        
+        html_ptr.write("        </tr> \n")
+
+    html_ptr.write("    </tbody>\n")
+
+
+    html_ptr.write("</table>\n")  
+
+
+#----------------------------------------------------------------------------------------#
+def display_product_summary_table(html_ptr, productData, encodedStatusApprovedIcon, encodedStatusRejectedIcon, encodedStatusDraftIcon):
+
+
+    numApproved = productData["numApproved"]
+    numRejected = productData["numRejected"] 
+    numDraft = productData["numDraft"] 
+
+    P1Licenses = productData["P1Licenses"]
+    P2Licenses = productData["P2Licenses"] 
+    P3Licenses = productData["P3Licenses"] 
+    NALicenses = productData["NALicenses"]
+    numTotalVulnerabilities = productData["numTotalVulnerabilities"]
+    numCriticalVulnerabilities = productData["numCriticalVulnerabilities"]
+    numHighVulnerabilities = productData["numHighVulnerabilities"]
+    numMediumVulnerabilities = productData["numMediumVulnerabilities"]
+    numLowVulnerabilities = productData["numLowVulnerabilities"]
+    numNoneVulnerabilities = productData["numNoneVulnerabilities"]
+   
+    html_ptr.write("<table id='productSummaryData' class='table table-hover table-sm row-border' style='width:90%'>\n")
+
+    html_ptr.write("    <thead>\n")
+    html_ptr.write("        <tr>\n")
+    html_ptr.write("            <th colspan='8' class='text-center'><h4>Product Summary</h4></th>\n") 
+    html_ptr.write("        </tr>\n") 
+    html_ptr.write("        <tr>\n") 
+    html_ptr.write("            <th style='width: 10%' class='text-center'>LICENSE PRIORITIES</th>\n") 
+    html_ptr.write("            <th style='width: 15%' class='text-center'>VULNERABILITIES</th>\n")
+    html_ptr.write("            <th style='width: 15%' class='text-center'>REVIEW SUMMARY</th>\n")
+    html_ptr.write("        </tr>\n")
+    html_ptr.write("    </thead>\n")  
+    html_ptr.write("    <tbody>\n")
+               
+    
+    html_ptr.write("        <tr> \n")
+    html_ptr.write("            <td class='text-center text-nowrap' data-sort='%s' >\n" %P1Licenses)
+    html_ptr.write("                <span class='btn btn-vuln btn-high'>%s</span>\n" %(P1Licenses))
+    html_ptr.write("                <span class='btn btn-vuln btn-medium'>%s</span>\n" %(P2Licenses))
+    html_ptr.write("                <span class='btn btn-vuln btn-low'>%s</span>\n" %(P3Licenses))
+    html_ptr.write("                <span class='btn btn-vuln btn-none'>%s</span>\n" %(NALicenses))
+    html_ptr.write("            </td>\n")
+
+
+    html_ptr.write("            <td class='text-center text-nowrap' data-sort='%s' >\n" %numCriticalVulnerabilities)
+    # Write in single line to remove spaces between btn spans
+    if numTotalVulnerabilities > 0:
+        html_ptr.write("                <span class='btn btn-vuln btn-critical'>%s</span>\n" %(numCriticalVulnerabilities))
+        html_ptr.write("                <span class='btn btn-vuln btn-high'>%s</span>\n" %(numHighVulnerabilities))
+        html_ptr.write("                <span class='btn btn-vuln btn-medium'>%s</span>\n" %(numMediumVulnerabilities))
+        html_ptr.write("                <span class='btn btn-vuln btn-low'>%s</span>\n" %(numLowVulnerabilities))
+        html_ptr.write("                <span class='btn btn-vuln btn-none'>%s</span>\n" %(numNoneVulnerabilities))
+    else:
+        html_ptr.write("                <span class='btn btn-vuln btn-no-vulns'>None</span>\n")
+    html_ptr.write("            </td> \n")
+
+   
+    html_ptr.write("            <td class='text-center text-nowrap' style='color:gray;'>")
+    html_ptr.write("<img src='data:image/png;base64, %s' width='15px' height='15px' style='margin-top: -2px; padding-left: -10px;'> %s" %(encodedStatusApprovedIcon.decode('utf-8'), numApproved))
+    html_ptr.write("            &nbsp &nbsp \n")
+    html_ptr.write("<img src='data:image/png;base64, %s' width='15px' height='15px' style='margin-top: -2px; padding-left: -10px'> %s" %(encodedStatusRejectedIcon.decode('utf-8'), numRejected))
+    html_ptr.write("            &nbsp &nbsp \n")
+    html_ptr.write("<img src='data:image/png;base64, %s' width='15px' height='15px' style='margin-top: -2px; padding-left: -10px'> %s" %(encodedStatusDraftIcon.decode('utf-8'), numDraft))
+    html_ptr.write("            </td> \n")
+    html_ptr.write("        </tr> \n")
+
+    html_ptr.write("    </tbody>\n")
+
+
+    html_ptr.write("</table>\n")  

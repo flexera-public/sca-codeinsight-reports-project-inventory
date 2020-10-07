@@ -39,6 +39,26 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
             print("No project inventory response.")
             return -1
 
+        # Create empty dictionary for project level data for this project
+        projectData[projectID] = {}
+
+        #############################################
+        #  This area will be replaced by 2020R4 APIs
+        P1InventoryItems = 0
+        numApproved = 0
+        numRejected = 0
+        numDraft = 0
+        P1Licenses = 0
+        P2Licenses = 0
+        P3Licenses = 0
+        NALicenses = 0
+        numTotalVulnerabilities = 0
+        numCriticalVulnerabilities = 0
+        numHighVulnerabilities = 0
+        numMediumVulnerabilities = 0
+        numLowVulnerabilities = 0
+        numNoneVulnerabilities = 0
+
         projectName = projectInventoryResponse["projectName"]
         inventoryItems = projectInventoryResponse["inventoryItems"]
         totalNumberIventory = len(inventoryItems)
@@ -86,6 +106,63 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
                 "selectedLicenseUrl" : selectedLicenseUrl,
                 "inventoryReviewStatus" : inventoryReviewStatus
             }
+
+            #############################################
+            # Sum up inventory review status data
+
+            if inventoryReviewStatus == "Approved":
+                numApproved += 1
+            elif inventoryReviewStatus == "Rejected":
+                numRejected += 1
+            elif inventoryReviewStatus == "Draft":
+                numDraft += 1
+            else:
+                logger.error("Unknown inventoryReview Status: %s" %inventoryReviewStatus)
+
+
+
+            #############################################
+            #  This area will be replaced by 2020R4 APIs
+            if inventoryPriority == "High":  # this is P1 inventory item
+                P1InventoryItems +=1
+
+            if selectedLicensePriority == 1:
+                P1Licenses += 1
+            elif selectedLicensePriority == 2:
+                P2Licenses += 1
+            elif selectedLicensePriority == 3:
+                P3Licenses += 1
+            elif selectedLicensePriority == "N/A":
+                NALicenses += 1
+            else:
+                logger.error("Unknown license priority: %s" %selectedLicensePriority)
+
+            if vulnerabilityData != "":
+                numTotalVulnerabilities += vulnerabilityData["numTotalVulnerabilities"]
+                numCriticalVulnerabilities += vulnerabilityData["numCriticalVulnerabilities"]
+                numHighVulnerabilities += vulnerabilityData["numHighVulnerabilities"]
+                numMediumVulnerabilities += vulnerabilityData["numMediumVulnerabilities"]
+                numLowVulnerabilities += vulnerabilityData["numLowVulnerabilities"]
+                numNoneVulnerabilities += vulnerabilityData["numNoneVulnerabilities"]
+
+        projectData[projectID]["projectName"] = projectName
+        projectData[projectID]["P1InventoryItems"] = P1InventoryItems
+        projectData[projectID]["numApproved"] = numApproved
+        projectData[projectID]["numRejected"] = numRejected
+        projectData[projectID]["numDraft"] = numDraft
+        projectData[projectID]["P1Licenses"] = P1Licenses
+        projectData[projectID]["P2Licenses"] = P2Licenses
+        projectData[projectID]["P3Licenses"] = P3Licenses
+        projectData[projectID]["NALicenses"] = NALicenses
+        projectData[projectID]["numTotalVulnerabilities"] = numTotalVulnerabilities
+        projectData[projectID]["numCriticalVulnerabilities"] = numCriticalVulnerabilities
+        projectData[projectID]["numHighVulnerabilities"] = numHighVulnerabilities
+        projectData[projectID]["numMediumVulnerabilities"] = numMediumVulnerabilities
+        projectData[projectID]["numLowVulnerabilities"] = numLowVulnerabilities
+        projectData[projectID]["numNoneVulnerabilities"] = numNoneVulnerabilities
+
+    # Roll up the project summarys for the full product
+    productData = calculate_product_summary(projectData)
                 
 
     reportData = {}
@@ -94,6 +171,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
     reportData["baseProjectName"] = baseProjectName
     reportData["projectHierarchy"] =projectHierarchy
     reportData["inventoryData"] = inventoryData
+    reportData["projectData"] = projectData
+    reportData["productData"] = productData
     reportData["baseURL"] = baseURL
 
     logger.info("Exiting gather_data_for_report")
@@ -164,3 +243,42 @@ def get_vulnerability_summary(vulnerabilities):
     vulnerabilityData["numNoneVulnerabilities"] = numNoneVulnerabilities
 
     return vulnerabilityData
+
+
+#----------------------------------------------------------------------
+def calculate_product_summary(projectData):
+
+    productData = {}
+    productData["numApproved"] = 0
+    productData["numRejected"] = 0
+    productData["numDraft"] = 0
+    productData["P1Licenses"] = 0
+    productData["P2Licenses"] = 0
+    productData["P3Licenses"] = 0
+    productData["NALicenses"] = 0
+    productData["numTotalVulnerabilities"] = 0
+    productData["numCriticalVulnerabilities"] = 0
+    productData["numHighVulnerabilities"] = 0
+    productData["numMediumVulnerabilities"] = 0
+    productData["numLowVulnerabilities"] = 0
+    productData["numNoneVulnerabilities"] = 0
+
+    for project in projectData:
+
+        productData["numApproved"] += projectData[project]["numApproved"]
+        productData["numRejected"] += projectData[project]["numRejected"] 
+        productData["numDraft"] += projectData[project]["numDraft"] 
+
+        productData["P1Licenses"] += projectData[project]["P1Licenses"]
+        productData["P2Licenses"] += projectData[project]["P2Licenses"] 
+        productData["P3Licenses"]  += projectData[project]["P3Licenses"] 
+        productData["NALicenses"] += projectData[project]["NALicenses"]
+        productData["numTotalVulnerabilities"] += projectData[project]["numTotalVulnerabilities"]
+        productData["numCriticalVulnerabilities"] += projectData[project]["numCriticalVulnerabilities"]
+        productData["numHighVulnerabilities"] += projectData[project]["numHighVulnerabilities"]
+        productData["numMediumVulnerabilities"] += projectData[project]["numMediumVulnerabilities"]
+        productData["numLowVulnerabilities"] += projectData[project]["numLowVulnerabilities"]
+        productData["numNoneVulnerabilities"] += projectData[project]["numNoneVulnerabilities"]
+
+    return productData
+    
