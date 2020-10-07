@@ -303,18 +303,6 @@ def generate_html_report(reportData):
 
 
         ''')
-    html_ptr.write('''
-        <script>
-            var table = $('#projectSummaryData').DataTable();
-
-            $(document).ready(function() {
-                table;
-            } );
-
-        </script>
-
-
-        ''')
 
     html_ptr.write("</body>\n") 
     html_ptr.write("</html>\n") 
