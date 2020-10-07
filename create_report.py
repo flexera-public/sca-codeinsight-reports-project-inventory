@@ -78,6 +78,8 @@ def main():
 		logger.error("Error encountered while creating report artifacts.")
 		return -1
 
+	sys.exit()
+
 	#########################################################
 	# Create zip file to be uploaded to Code Insight
 	try:

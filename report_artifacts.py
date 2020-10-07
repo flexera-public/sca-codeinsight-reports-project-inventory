@@ -12,6 +12,9 @@ import logging
 import os
 from datetime import datetime
 import base64
+import json
+from anytree.importer import DictImporter
+from anytree import RenderTree, AsciiStyle
 
 logger = logging.getLogger(__name__)
 
@@ -37,10 +40,11 @@ def generate_html_report(reportData):
     logger.info("    Entering generate_html_report")
 
     reportName = reportData["reportName"]
-    projectName  = reportData["projectName"]
+    baseProjectName  = reportData["baseProjectName"]
     projectID  = reportData["projectID"]
     baseURL  = reportData["baseURL"]
     inventoryData = reportData["inventoryData"]
+    projectHierarchy = reportData["projectHierarchy"]
     
     scriptDirectory = os.path.dirname(os.path.realpath(__file__))
     cssFile =  os.path.join(scriptDirectory, "html-assets/css/revenera_common.css")
@@ -108,6 +112,13 @@ def generate_html_report(reportData):
         logger.error("Unable to open %s" %cssFile)
         print("Unable to open %s" %cssFile)
 
+    html_ptr.write('''
+        pre {
+            display: inline;
+            margin: 0;  
+           }
+    ''')     
+
     html_ptr.write("        </style>\n")  
 
     html_ptr.write("    	<link rel='icon' type='image/png' href='data:image/png;base64, {}'>\n".format(encodedfaviconImage.decode('utf-8')))
@@ -134,41 +145,49 @@ def generate_html_report(reportData):
     #---------------------------------------------------------------------------------------------------
     html_ptr.write("<!-- BEGIN BODY -->\n")  
 
+
+    display_simple_project_hierarchy(html_ptr, projectID, baseProjectName, projectHierarchy)
+
+
+    html_ptr.write("<hr class='small'>")
+
     html_ptr.write("<table id='inventoryData' class='table table-hover table-sm row-border' style='width:90%'>\n")
 
     html_ptr.write("    <thead>\n")
     html_ptr.write("        <tr>\n")
-    html_ptr.write("            <th colspan='7' class='text-center'><h4>%s</h4></th>\n" %projectName) 
+    html_ptr.write("            <th colspan='8' class='text-center'><h4>%s</h4></th>\n" %baseProjectName) 
     html_ptr.write("        </tr>\n") 
     html_ptr.write("        <tr>\n") 
+    html_ptr.write("            <th style='width: 15%' class='text-center'>PROJECT</th>\n") 
     html_ptr.write("            <th style='width: 25%' class='text-center'>INVENTORY ITEM</th>\n") 
     html_ptr.write("            <th style='width: 10%' class='text-center'>PRIORITY</th>\n") 
     html_ptr.write("            <th style='width: 15%' class='text-center'>COMPONENT</th>\n")
-    html_ptr.write("            <th style='width: 8%' class='text-center'>VERSION</th>\n")
-    html_ptr.write("            <th style='width: 10%' class='text-center'>LICENSE</th>\n") 
+    html_ptr.write("            <th style='width: 5%' class='text-center'>VERSION</th>\n")
+    html_ptr.write("            <th style='width: 5%' class='text-center'>LICENSE</th>\n") 
     html_ptr.write("            <th style='width: 18%' class='text-center'>VULNERABILITIES</th>\n")
-    html_ptr.write("            <th style='width: 14%' class='text-center'>REVIEW STATUS</th>\n")
+    html_ptr.write("            <th style='width: 7%' class='text-center'>REVIEW STATUS</th>\n")
     html_ptr.write("        </tr>\n")
     html_ptr.write("    </thead>\n")  
     html_ptr.write("    <tbody>\n")  
 
-
     ######################################################
     # Cycle through the inventory to create the 
     # table with the results
-    for inventoryItem in sorted(inventoryData):
-        componentName = inventoryData[inventoryItem]["componentName"]
-        componentVersionName = inventoryData[inventoryItem]["componentVersionName"]
-        inventoryPriority = inventoryData[inventoryItem]["inventoryPriority"]
-        selectedLicenseName = inventoryData[inventoryItem]["selectedLicenseName"]
-        selectedLicensePriority = inventoryData[inventoryItem]["selectedLicensePriority"]
-        vulnerabilityData = inventoryData[inventoryItem]["vulnerabilityData"]
-        componentUrl = inventoryData[inventoryItem]["componentUrl"]
-        selectedLicenseUrl = inventoryData[inventoryItem]["selectedLicenseUrl"]
-        inventoryID = inventoryData[inventoryItem]["inventoryID"]
-        inventoryReviewStatus = inventoryData[inventoryItem]["inventoryReviewStatus"]
+    for inventoryID in sorted(inventoryData):
+        projectName = inventoryData[inventoryID]["projectName"]
+        projectID = inventoryData[inventoryID]["projectID"]
+        inventoryItemName = inventoryData[inventoryID]["inventoryItemName"]
+        componentName = inventoryData[inventoryID]["componentName"]
+        componentVersionName = inventoryData[inventoryID]["componentVersionName"]
+        inventoryPriority = inventoryData[inventoryID]["inventoryPriority"]
+        selectedLicenseName = inventoryData[inventoryID]["selectedLicenseName"]
+        selectedLicensePriority = inventoryData[inventoryID]["selectedLicensePriority"]
+        vulnerabilityData = inventoryData[inventoryID]["vulnerabilityData"]
+        componentUrl = inventoryData[inventoryID]["componentUrl"]
+        selectedLicenseUrl = inventoryData[inventoryID]["selectedLicenseUrl"]
+        inventoryReviewStatus = inventoryData[inventoryID]["inventoryReviewStatus"]
 
-        logger.debug("Reporting for inventory item %s" %inventoryItem)
+        logger.debug("Reporting for inventory item %s" %inventoryID)
 
         numTotalVulnerabilities = 0
         numCriticalVulnerabilities = 0
@@ -189,8 +208,8 @@ def generate_html_report(reportData):
 
         html_ptr.write("        <tr> \n")
 
-
-        html_ptr.write("            <td class='text-left'><a href='%s/codeinsight/FNCI#myprojectdetails/?id=%s&tab=projectInventory&pinv=%s' target='_blank'>%s</a></td>\n" %(baseURL, projectID, inventoryID, inventoryItem))
+        html_ptr.write("            <td class='text-left'>%s</td>\n" %(projectName))
+        html_ptr.write("            <td class='text-left'><a href='%s/codeinsight/FNCI#myprojectdetails/?id=%s&tab=projectInventory&pinv=%s' target='_blank'>%s</a></td>\n" %(baseURL, projectID, inventoryID, inventoryItemName))
  
 
         if inventoryPriority == "High":
@@ -298,3 +317,25 @@ def encodeImage(imageFile):
     except:
         logger.error("Unable to open %s" %imageFile)
         raise
+
+#----------------------------------------------------------------------------------------#
+def display_simple_project_hierarchy(html_ptr, projectID, projectName, projectChildren):
+
+    logger.debug("Entering display_simple_project_hierarchy for %s" %projectName) 
+
+    importer = DictImporter()
+    # Clean up the dictionary for anytree
+    updatedProjectChildren = json.loads(json.dumps(projectChildren).replace('"childProject":', '"children":'))
+    root = importer.import_(updatedProjectChildren)
+
+    for row in RenderTree(root, style=AsciiStyle(), childiter=project_sort):
+
+        projectName = row.node.name
+        projectID = row.node.id
+
+        html_ptr.write("<pre>%s</pre>%s<br>\n" %(row.pre, projectName))
+
+#----------------------------------------------------------------------------------------#
+def project_sort(projects):
+    return sorted(projects, key=lambda projects: projects.name)
+   
