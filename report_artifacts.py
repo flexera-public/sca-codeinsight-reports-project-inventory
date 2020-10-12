@@ -394,7 +394,7 @@ def display_project_summary_table(html_ptr, projectData, encodedStatusApprovedIc
         html_ptr.write("                <span class='btn btn-license btn-P1'>%s</span>\n" %(P1Licenses))
         html_ptr.write("                <span class='btn btn-license btn-P2'>%s</span>\n" %(P2Licenses))
         html_ptr.write("                <span class='btn btn-license btn-P3'>%s</span>\n" %(P3Licenses))
-        #html_ptr.write("                <span class='btn btn-license btn-none'>%s</span>\n" %(NALicenses))
+        html_ptr.write("                <span class='btn btn-license btn-none'>%s</span>\n" %(NALicenses))
         html_ptr.write("            </td>\n")
 
 
@@ -465,7 +465,7 @@ def display_product_summary_table(html_ptr, productData, encodedStatusApprovedIc
     html_ptr.write("                <span class='btn btn-license btn-P1'>%s</span>\n" %(P1Licenses))
     html_ptr.write("                <span class='btn btn-license btn-P2'>%s</span>\n" %(P2Licenses))
     html_ptr.write("                <span class='btn btn-license btn-P3'>%s</span>\n" %(P3Licenses))
-    #html_ptr.write("                <span class='btn btn-license btn-none'>%s</span>\n" %(NALicenses))
+    html_ptr.write("                <span class='btn btn-license btn-none'>%s</span>\n" %(NALicenses))
     html_ptr.write("            </td>\n")
 
 
