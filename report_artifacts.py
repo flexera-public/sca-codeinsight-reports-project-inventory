@@ -391,10 +391,10 @@ def display_project_summary_table(html_ptr, projectData, encodedStatusApprovedIc
         html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(projectLink, projectName))
 
         html_ptr.write("            <td class='text-center text-nowrap' data-sort='%s' >\n" %P1Licenses)
-        html_ptr.write("                <span class='btn btn-vuln btn-high'>%s</span>\n" %(P1Licenses))
-        html_ptr.write("                <span class='btn btn-vuln btn-medium'>%s</span>\n" %(P2Licenses))
-        html_ptr.write("                <span class='btn btn-vuln btn-low'>%s</span>\n" %(P3Licenses))
-        html_ptr.write("                <span class='btn btn-vuln btn-none'>%s</span>\n" %(NALicenses))
+        html_ptr.write("                <span class='btn btn-license btn-P1'>%s</span>\n" %(P1Licenses))
+        html_ptr.write("                <span class='btn btn-license btn-P2'>%s</span>\n" %(P2Licenses))
+        html_ptr.write("                <span class='btn btn-license btn-P3'>%s</span>\n" %(P3Licenses))
+        #html_ptr.write("                <span class='btn btn-license btn-none'>%s</span>\n" %(NALicenses))
         html_ptr.write("            </td>\n")
 
 
@@ -462,10 +462,10 @@ def display_product_summary_table(html_ptr, productData, encodedStatusApprovedIc
     
     html_ptr.write("        <tr> \n")
     html_ptr.write("            <td class='text-center text-nowrap' data-sort='%s' >\n" %P1Licenses)
-    html_ptr.write("                <span class='btn btn-vuln btn-high'>%s</span>\n" %(P1Licenses))
-    html_ptr.write("                <span class='btn btn-vuln btn-medium'>%s</span>\n" %(P2Licenses))
-    html_ptr.write("                <span class='btn btn-vuln btn-low'>%s</span>\n" %(P3Licenses))
-    html_ptr.write("                <span class='btn btn-vuln btn-none'>%s</span>\n" %(NALicenses))
+    html_ptr.write("                <span class='btn btn-license btn-P1'>%s</span>\n" %(P1Licenses))
+    html_ptr.write("                <span class='btn btn-license btn-P2'>%s</span>\n" %(P2Licenses))
+    html_ptr.write("                <span class='btn btn-license btn-P3'>%s</span>\n" %(P3Licenses))
+    #html_ptr.write("                <span class='btn btn-license btn-none'>%s</span>\n" %(NALicenses))
     html_ptr.write("            </td>\n")
 
 
