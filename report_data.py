@@ -170,9 +170,9 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
         projectData[projectID]["projectLink"] = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory"
 
 
+
     # Roll up the project summarys for the full product
-    productData = calculate_product_summary(projectData)
-                
+    summaryData = gather_summary_data(projectData)
 
     reportData = {}
     reportData["reportName"] = reportName
@@ -181,7 +181,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
     reportData["projectHierarchy"] =projectHierarchy
     reportData["inventoryData"] = inventoryData
     reportData["projectData"] = projectData
-    reportData["productData"] = productData
+    reportData["summaryData"] = summaryData
     reportData["baseURL"] = baseURL
 
     logger.info("Exiting gather_data_for_report")
@@ -255,7 +255,8 @@ def get_vulnerability_summary(vulnerabilities):
 
 
 #----------------------------------------------------------------------
-def calculate_product_summary(projectData):
+def gather_summary_data(projectData):
+    logger.debug("Entering calculate_product_summary")
 
     productData = {}
     productData["numApproved"] = 0
@@ -272,22 +273,68 @@ def calculate_product_summary(projectData):
     productData["numLowVulnerabilities"] = 0
     productData["numNoneVulnerabilities"] = 0
 
+    productData["projectData"] = {}
+
+    # Create lists to contain the summary data for project information for the bar charts
+    productData["projectData"]["projectNames"] = []
+    productData["projectData"]["numApproved"] = []
+    productData["projectData"]["numRejected"] = []
+    productData["projectData"]["numDraft"] = []
+    productData["projectData"]["P1Licenses"] = []
+    productData["projectData"]["P2Licenses"] = []
+    productData["projectData"]["P3Licenses"] = []
+    productData["projectData"]["NALicenses"] = []
+    productData["projectData"]["numCriticalVulnerabilities"] = []
+    productData["projectData"]["numHighVulnerabilities"] = []
+    productData["projectData"]["numMediumVulnerabilities"] = []
+    productData["projectData"]["numLowVulnerabilities"] = []
+    productData["projectData"]["numNoneVulnerabilities"] = []
+
+
+
     for project in projectData:
 
+        productData["projectData"]["projectNames"].append(projectData[project]["projectName"])
+
         productData["numApproved"] += projectData[project]["numApproved"]
-        productData["numRejected"] += projectData[project]["numRejected"] 
-        productData["numDraft"] += projectData[project]["numDraft"] 
+        productData["projectData"]["numApproved"] .append(projectData[project]["numApproved"])
+
+        productData["numRejected"] += projectData[project]["numRejected"]
+        productData["projectData"]["numRejected"].append(projectData[project]["numRejected"]) 
+
+        productData["numDraft"] += projectData[project]["numDraft"]
+        productData["projectData"]["numDraft"] .append(projectData[project]["numDraft"]) 
 
         productData["P1Licenses"] += projectData[project]["P1Licenses"]
+        productData["projectData"]["P1Licenses"] .append(projectData[project]["P1Licenses"])
+
         productData["P2Licenses"] += projectData[project]["P2Licenses"] 
-        productData["P3Licenses"]  += projectData[project]["P3Licenses"] 
+        productData["projectData"]["P2Licenses"].append(projectData[project]["P2Licenses"])
+
+        productData["P3Licenses"]  += projectData[project]["P3Licenses"]
+        productData["projectData"]["P3Licenses"].append(projectData[project]["P3Licenses"])
+
         productData["NALicenses"] += projectData[project]["NALicenses"]
+        productData["projectData"]["NALicenses"].append(projectData[project]["NALicenses"])
+
         productData["numTotalVulnerabilities"] += projectData[project]["numTotalVulnerabilities"]
+
         productData["numCriticalVulnerabilities"] += projectData[project]["numCriticalVulnerabilities"]
+        productData["projectData"]["numCriticalVulnerabilities"].append(projectData[project]["numCriticalVulnerabilities"])
+
         productData["numHighVulnerabilities"] += projectData[project]["numHighVulnerabilities"]
+        productData["projectData"]["numHighVulnerabilities"].append(projectData[project]["numHighVulnerabilities"])
+
         productData["numMediumVulnerabilities"] += projectData[project]["numMediumVulnerabilities"]
+        productData["projectData"]["numMediumVulnerabilities"].append(projectData[project]["numMediumVulnerabilities"])
+
         productData["numLowVulnerabilities"] += projectData[project]["numLowVulnerabilities"]
+        productData["projectData"]["numLowVulnerabilities"].append(projectData[project]["numLowVulnerabilities"])
+
         productData["numNoneVulnerabilities"] += projectData[project]["numNoneVulnerabilities"]
+        productData["projectData"]["numNoneVulnerabilities"].append(projectData[project]["numNoneVulnerabilities"])
+   
+
 
     return productData
     

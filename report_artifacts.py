@@ -46,7 +46,7 @@ def generate_html_report(reportData):
     inventoryData = reportData["inventoryData"]
     projectHierarchy = reportData["projectHierarchy"]
     projectData = reportData["projectData"]
-    productData = reportData["productData"]
+    summaryData = reportData["summaryData"]
    
     scriptDirectory = os.path.dirname(os.path.realpath(__file__))
     cssFile =  os.path.join(scriptDirectory, "html-assets/css/revenera_common.css")
@@ -153,11 +153,31 @@ def generate_html_report(reportData):
 
         html_ptr.write("<hr class='small'>")
 
-        display_product_summary_table(html_ptr, productData, encodedStatusApprovedIcon, encodedStatusRejectedIcon, encodedStatusDraftIcon)
+        display_product_summary_table(html_ptr, summaryData, encodedStatusApprovedIcon, encodedStatusRejectedIcon, encodedStatusDraftIcon)
 
-        html_ptr.write("<hr class='small'>")
+        html_ptr.write("<hr class='small'>\n")
 
-    display_project_summary_table(html_ptr, projectData, encodedStatusApprovedIcon, encodedStatusRejectedIcon, encodedStatusDraftIcon)
+    
+    #  Create table to hold the project summary charts.
+    #  js script itself is added later
+
+    html_ptr.write("<table id='projectSummary' class='table' style='width:90%'>\n")
+    html_ptr.write("    <thead>\n")
+    html_ptr.write("        <tr>\n")
+    html_ptr.write("            <th colspan='8' class='text-center'><h4>Project Summaries</h4></th>\n") 
+    html_ptr.write("        </tr>\n") 
+    html_ptr.write("    </thead>\n")
+    html_ptr.write("    <tbody>\n")
+    html_ptr.write("        <tr>\n")
+    html_ptr.write("            <td style='width: 33%'><canvas id='projectLicenses'></canvas>  </td>\n")
+    html_ptr.write("            <td style='width: 33%'><canvas id='projectVulnerabilities'></canvas>  </td>\n")
+    html_ptr.write("            <td style='width: 33%'><canvas id='projectReviewStatus'></canvas>  </td>\n")
+    html_ptr.write("        </tr>\n")
+    html_ptr.write("    </tbody>\n")
+    html_ptr.write("</table>\n")
+
+
+
 
     html_ptr.write("<hr class='small'>")
 
@@ -179,6 +199,7 @@ def generate_html_report(reportData):
     html_ptr.write("        </tr>\n")
     html_ptr.write("    </thead>\n")  
     html_ptr.write("    <tbody>\n")  
+
 
     ######################################################
     # Cycle through the inventory to create the 
@@ -290,22 +311,27 @@ def generate_html_report(reportData):
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>  
-    <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script> 
+    <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+ 
     ''')
 
 
+    html_ptr.write("<script>\n")
+    # Add the js for inventory datatable
     html_ptr.write('''
-        <script>
+        
             var table = $('#inventoryData').DataTable();
 
             $(document).ready(function() {
                 table;
             } );
+    ''')
 
-        </script>
+    # Add the js for the project summary stacked bar charts
+    generate_project_summary_charts(html_ptr, summaryData)
 
-
-        ''')
+    html_ptr.write("</script>\n")
 
     html_ptr.write("</body>\n") 
     html_ptr.write("</html>\n") 
@@ -352,78 +378,166 @@ def project_sort(projects):
     return sorted(projects, key=lambda projects: projects.name)
 
 #----------------------------------------------------------------------------------------#
-def display_project_summary_table(html_ptr, projectData, encodedStatusApprovedIcon, encodedStatusRejectedIcon, encodedStatusDraftIcon):
-   
-    html_ptr.write("<table id='projectSummaryData' class='table table-hover table-sm row-border' style='width:90%'>\n")
+def generate_project_summary_charts(html_ptr, summaryData):
+    logger.info("Entering generate_project_summary_charts")
 
-    html_ptr.write("    <thead>\n")
-    html_ptr.write("        <tr>\n")
-    html_ptr.write("            <th colspan='8' class='text-center'><h4>Project Summary</h4></th>\n") 
-    html_ptr.write("        </tr>\n") 
-    html_ptr.write("        <tr>\n") 
-    html_ptr.write("            <th style='width: 15%' class='text-center'>PROJECT NAME</th>\n") 
-    html_ptr.write("            <th style='width: 10%' class='text-center'>LICENSE PRIORITIES</th>\n") 
-    html_ptr.write("            <th style='width: 15%' class='text-center'>VULNERABILITIES</th>\n")
-    html_ptr.write("            <th style='width: 15%' class='text-center'>REVIEW SUMMARY</th>\n")
-    html_ptr.write("        </tr>\n")
-    html_ptr.write("    </thead>\n")  
-    html_ptr.write("    <tbody>\n")
+    print(summaryData)
 
-    for project in projectData:
-        projectName = projectData[project]["projectName"]
-        projectLink = projectData[project]["projectLink"]
-        numApproved = projectData[project]["numApproved"]
-        numRejected = projectData[project]["numRejected"] 
-        numDraft = projectData[project]["numDraft"] 
-        P1Licenses = projectData[project]["P1Licenses"]
-        P2Licenses = projectData[project]["P2Licenses"] 
-        P3Licenses = projectData[project]["P3Licenses"] 
-        NALicenses = projectData[project]["NALicenses"]
-        numTotalVulnerabilities = projectData[project]["numTotalVulnerabilities"]
-        numCriticalVulnerabilities = projectData[project]["numCriticalVulnerabilities"]
-        numHighVulnerabilities = projectData[project]["numHighVulnerabilities"]
-        numMediumVulnerabilities = projectData[project]["numMediumVulnerabilities"]
-        numLowVulnerabilities = projectData[project]["numLowVulnerabilities"]
-        numNoneVulnerabilities = projectData[project]["numNoneVulnerabilities"]
+    html_ptr.write('''  
+    var defaultBarChartOptions = {
+    layout: {
+        padding: {
+            bottom: 25  //set that fits the best
+        }
+    },
+    tooltips: {
+        enabled: true,
+         yAlign: 'center'
+    },
+    title: {
+        display: true,
+    },
+
+    scales: {
+        xAxes: [{
+            ticks: {
+                beginAtZero:true,
+                fontFamily: "'Open Sans Bold', sans-serif",
+                fontSize:11
+             },
+            scaleLabel:{
+                display:false
+            },
+            gridLines: {
+            }, 
+            stacked: true
+        }],
+        yAxes: [{
+            gridLines: {
+                display:false,
+                color: "#fff",
+                zeroLineColor: "#fff",
+                zeroLineWidth: 0
+            },
+            ticks: {
+                fontFamily: "'Open Sans Bold', sans-serif",
+                fontSize:11
+            },
+
+            stacked: true
+        }]
+    },
+    legend:{
+        display:false
+    },
+    
+};  ''')
+
+    html_ptr.write('''  
+        var projectLicenses = document.getElementById("projectLicenses");
+        var projectLicensesChart = new Chart(projectLicenses, {
+            type: 'horizontalBar',
+            data: {
+                labels: %s,
                 
+                datasets: [{
+                    // P1 items
+                    label: 'Strong Copyleft',
+                    data: %s,
+                    backgroundColor: "#C00000"
+                },{
+                    // P2 items
+                    label: 'Weak Copyleft/Commercial',
+                    data: %s,
+                    backgroundColor: "#FFFF00"
+                },{
+                    // P3 items
+                    label: 'Permissive/Public Domain',
+                    data: %s,
+                    backgroundColor: "#008000"
+                }]
+            },
+
+            options: defaultBarChartOptions,
+        });
+        projectLicensesChart.options.title.text = "License Summary"
+
+        ''' %(summaryData["projectData"]["projectNames"], summaryData["projectData"]["P1Licenses"], summaryData["projectData"]["P2Licenses"], summaryData["projectData"]["P3Licenses"])  )
+
+    html_ptr.write(''' 
+    
+    var projectVulnerabilities= document.getElementById("projectVulnerabilities");
+    var projectVulnerabilityChart = new Chart(projectVulnerabilities, {
+        type: 'horizontalBar',
+        data: {
+            labels: %s,
+            datasets: [{
+                // Critical Vulnerabilities
+                label: 'Critical',
+                data: %s,
+                backgroundColor: "#400000"
+            },{
+                // High Vulnerabilities
+                label: 'High',
+                data: %s,
+                backgroundColor: "#C00000"
+            },{
+                // Medium Vulnerabilities
+                label: 'Medium',
+                data: %s,
+                backgroundColor: "#FFA500"
+            },{
+                // Low Vulnerabilities
+                label: 'Low',
+                data: %s,
+                backgroundColor: "#FFFF00"
+            },{
+                // N/A Vulnerabilities
+                label: 'N/A',
+                data: %s,
+                backgroundColor: "#D3D3D3"
+            },
+            ]
+        },
+
+        options: defaultBarChartOptions,
         
-        html_ptr.write("        <tr> \n")
-        html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(projectLink, projectName))
+    });
+    projectVulnerabilityChart.options.title.text = "Vulnerability Summary"
+    
+    
+    ''' %(summaryData["projectData"]["projectNames"], summaryData["projectData"]["numCriticalVulnerabilities"], summaryData["projectData"]["numHighVulnerabilities"], summaryData["projectData"]["numMediumVulnerabilities"], summaryData["projectData"]["numLowVulnerabilities"], summaryData["projectData"]["numNoneVulnerabilities"]) )
+    
 
-        html_ptr.write("            <td class='text-center text-nowrap' data-sort='%s' >\n" %P1Licenses)
-        html_ptr.write("                <span class='btn btn-license btn-P1'>%s</span>\n" %(P1Licenses))
-        html_ptr.write("                <span class='btn btn-license btn-P2'>%s</span>\n" %(P2Licenses))
-        html_ptr.write("                <span class='btn btn-license btn-P3'>%s</span>\n" %(P3Licenses))
-        html_ptr.write("                <span class='btn btn-license btn-none'>%s</span>\n" %(NALicenses))
-        html_ptr.write("            </td>\n")
+    html_ptr.write('''  
+    var projectReviewStatus = document.getElementById("projectReviewStatus");
+    var projectReviewStatusChart = new Chart(projectReviewStatus, {
+        type: 'horizontalBar',
+        data: {
+            labels: %s,
+            datasets: [{
+                label: 'Approved',
+                data: %s,
+                backgroundColor: "#008000"
+            },{
+                label: 'Rejected',
+                data: %s,
+                backgroundColor: "#C00000"
+            },{
+                label: 'Unreviewed',
+                data: %s,
+                backgroundColor: "#d0d0d0"
+            }]
+        },
 
-
-        html_ptr.write("            <td class='text-center text-nowrap' data-sort='%s' >\n" %numCriticalVulnerabilities)
-        # Write in single line to remove spaces between btn spans
-        if numTotalVulnerabilities > 0:
-            html_ptr.write("                <span class='btn btn-vuln btn-critical'>%s</span>\n" %(numCriticalVulnerabilities))
-            html_ptr.write("                <span class='btn btn-vuln btn-high'>%s</span>\n" %(numHighVulnerabilities))
-            html_ptr.write("                <span class='btn btn-vuln btn-medium'>%s</span>\n" %(numMediumVulnerabilities))
-            html_ptr.write("                <span class='btn btn-vuln btn-low'>%s</span>\n" %(numLowVulnerabilities))
-            html_ptr.write("                <span class='btn btn-vuln btn-none'>%s</span>\n" %(numNoneVulnerabilities))
-        else:
-            html_ptr.write("                <span class='btn btn-vuln btn-no-vulns'>None</span>\n")
-        html_ptr.write("            </td> \n")
+        options: defaultBarChartOptions,
         
-        html_ptr.write("            <td class='text-center text-nowrap' style='color:gray;'>")
-        html_ptr.write("                <img src='data:image/png;base64, %s' width='15px' height='15px' style='margin-top: -2px;'> %s" %(encodedStatusApprovedIcon.decode('utf-8'), numApproved))
-        html_ptr.write("                &nbsp &nbsp \n")
-        html_ptr.write("                <img src='data:image/png;base64, %s' width='15px' height='15px' style='margin-top: -2px;'> %s" %(encodedStatusRejectedIcon.decode('utf-8'), numRejected))
-        html_ptr.write("                &nbsp &nbsp \n")
-        html_ptr.write("                <img src='data:image/png;base64, %s' width='15px' height='15px' style='margin-top: -2px;'> %s" %(encodedStatusDraftIcon.decode('utf-8'), numDraft))
-        html_ptr.write("            </td> \n")
-        
-        html_ptr.write("        </tr> \n")
+    });
 
-    html_ptr.write("    </tbody>\n")
-
-
-    html_ptr.write("</table>\n")  
+projectReviewStatusChart.options.title.text = "Review Status Summary"
+    
+    
+    ''' %(summaryData["projectData"]["projectNames"], summaryData["projectData"]["numApproved"], summaryData["projectData"]["numRejected"], summaryData["projectData"]["numDraft"]) )
 
 
 #----------------------------------------------------------------------------------------#
