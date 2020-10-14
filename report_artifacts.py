@@ -157,7 +157,10 @@ def generate_html_report(reportData):
     html_ptr.write("<table id='applicationSummary' class='table' style='width:90%'>\n")
     html_ptr.write("    <thead>\n")
     html_ptr.write("        <tr>\n")
-    html_ptr.write("            <th colspan='8' class='text-center'><h4>Application Summary</h4></th>\n") 
+    if len(projectData) > 1:
+        html_ptr.write("            <th colspan='8' class='text-center'><h4>Application Summary</h4></th>\n") 
+    else:
+        html_ptr.write("            <th colspan='8' class='text-center'><h4>%s Summary</h4></th>\n" %baseProjectName) 
     html_ptr.write("        </tr>\n") 
     html_ptr.write("    </thead>\n")
     html_ptr.write("    <tbody>\n")
