@@ -310,7 +310,7 @@ def generate_html_report(reportData):
     #---------------------------------------------------------------------------------------------------
     html_ptr.write("<!-- BEGIN FOOTER -->\n")
     html_ptr.write("<div class='report-footer'>\n")
-    html_ptr.write("  <div style='float:left'>&copy; 2020 Revenera</div>\n")
+    html_ptr.write("  <div style='float:left'>&copy; 2020 Flexera</div>\n")
     html_ptr.write("  <div style='float:right'>Generated on %s</div>\n" %now)
     html_ptr.write("</div>\n")
     html_ptr.write("<!-- END FOOTER -->\n")   
