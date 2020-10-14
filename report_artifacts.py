@@ -148,38 +148,49 @@ def generate_html_report(reportData):
     html_ptr.write("<!-- BEGIN BODY -->\n")  
 
     if len(projectData) > 1:
-
         display_simple_project_hierarchy(html_ptr, projectID, projectData, projectHierarchy)
-
         html_ptr.write("<hr class='small'>")
 
-        display_product_summary_table(html_ptr, summaryData, encodedStatusApprovedIcon, encodedStatusRejectedIcon, encodedStatusDraftIcon)
-
-        html_ptr.write("<hr class='small'>\n")
-
-    
-    #  Create table to hold the project summary charts.
+    #######################################################################
+    #  Create table to hold the application summary charts.
     #  js script itself is added later
-
-    html_ptr.write("<table id='projectSummary' class='table' style='width:90%'>\n")
+    html_ptr.write("<table id='applicationSummary' class='table' style='width:90%'>\n")
     html_ptr.write("    <thead>\n")
     html_ptr.write("        <tr>\n")
-    html_ptr.write("            <th colspan='8' class='text-center'><h4>Project Summaries</h4></th>\n") 
+    html_ptr.write("            <th colspan='8' class='text-center'><h4>Application Summary</h4></th>\n") 
     html_ptr.write("        </tr>\n") 
     html_ptr.write("    </thead>\n")
     html_ptr.write("    <tbody>\n")
     html_ptr.write("        <tr>\n")
-    html_ptr.write("            <td style='width: 33%'><canvas id='projectLicenses'></canvas>  </td>\n")
-    html_ptr.write("            <td style='width: 33%'><canvas id='projectVulnerabilities'></canvas>  </td>\n")
-    html_ptr.write("            <td style='width: 33%'><canvas id='projectReviewStatus'></canvas>  </td>\n")
+    html_ptr.write("            <td style='width: 33%'><canvas id='applicationLicenses'></canvas>  </td>\n")
+    html_ptr.write("            <td style='width: 33%'><canvas id='applicationVulnerabilities'></canvas>  </td>\n")
+    html_ptr.write("            <td style='width: 33%'><canvas id='applicationReviewStatus'></canvas>  </td>\n")
     html_ptr.write("        </tr>\n")
     html_ptr.write("    </tbody>\n")
     html_ptr.write("</table>\n")
 
+    html_ptr.write("<hr class='small'>\n")
 
+    if len(projectData) > 1:
+        #######################################################################
+        #  Create table to hold the project summary charts.
+        #  js script itself is added later
+        html_ptr.write("<table id='projectSummary' class='table' style='width:90%'>\n")
+        html_ptr.write("    <thead>\n")
+        html_ptr.write("        <tr>\n")
+        html_ptr.write("            <th colspan='8' class='text-center'><h4>Project Summaries</h4></th>\n") 
+        html_ptr.write("        </tr>\n") 
+        html_ptr.write("    </thead>\n")
+        html_ptr.write("    <tbody>\n")
+        html_ptr.write("        <tr>\n")
+        html_ptr.write("            <td style='width: 33%'><canvas id='projectLicenses'></canvas>  </td>\n")
+        html_ptr.write("            <td style='width: 33%'><canvas id='projectVulnerabilities'></canvas>  </td>\n")
+        html_ptr.write("            <td style='width: 33%'><canvas id='projectReviewStatus'></canvas>  </td>\n")
+        html_ptr.write("        </tr>\n")
+        html_ptr.write("    </tbody>\n")
+        html_ptr.write("</table>\n")
 
-
-    html_ptr.write("<hr class='small'>")
+        html_ptr.write("<hr class='small'>")
 
     html_ptr.write("<table id='inventoryData' class='table table-hover table-sm row-border' style='width:90%'>\n")
 
@@ -328,6 +339,10 @@ def generate_html_report(reportData):
             } );
     ''')
 
+    # Add the common chartjs config
+    add_default_chart_options(html_ptr)
+    # Add the js for the application summary stacked bar charts
+    generate_application_summary_chart(html_ptr, summaryData)
     # Add the js for the project summary stacked bar charts
     generate_project_summary_charts(html_ptr, summaryData)
 
@@ -365,6 +380,8 @@ def display_simple_project_hierarchy(html_ptr, projectID, projectData, projectCh
     updatedProjectChildren = json.loads(json.dumps(projectChildren).replace('"childProject":', '"children":'))
     root = importer.import_(updatedProjectChildren)
 
+    html_ptr.write("<div class='container' style='width:90%'>\n")
+
     for row in RenderTree(root, style=AsciiStyle(), childiter=project_sort):
 
         projectName = row.node.name
@@ -373,65 +390,180 @@ def display_simple_project_hierarchy(html_ptr, projectID, projectData, projectCh
 
         html_ptr.write("<pre>%s</pre><a href='%s' target='_blank'>%s</a><br>\n" %(row.pre, projectLink, projectName))
 
+    html_ptr.write("</div>\n")
+
 #----------------------------------------------------------------------------------------#
 def project_sort(projects):
     return sorted(projects, key=lambda projects: projects.name)
 
+
+#----------------------------------------------------------------------------------------#
+def add_default_chart_options(html_ptr):
+    # Add commont defaults for display charts
+    html_ptr.write('''  
+        var defaultBarChartOptions = {
+        layout: {
+            padding: {
+                bottom: 25  //set that fits the best
+            }
+        },
+        tooltips: {
+            enabled: true,
+            yAlign: 'center'
+        },
+        title: {
+            display: true,
+        },
+
+        scales: {
+            xAxes: [{
+                ticks: {
+                    beginAtZero:true,
+                    fontFamily: "'Open Sans Bold', sans-serif",
+                    fontSize:11
+                },
+                scaleLabel:{
+                    display:false
+                },
+                gridLines: {
+                }, 
+                stacked: true
+            }],
+            yAxes: [{
+                gridLines: {
+                    display:false,
+                    color: "#fff",
+                    zeroLineColor: "#fff",
+                    zeroLineWidth: 0
+                },
+                ticks: {
+                    fontFamily: "'Open Sans Bold', sans-serif",
+                    fontSize:11
+                },
+
+                stacked: true
+            }]
+        },
+        legend:{
+            display:false
+        },
+        
+    };  ''')
+
+#----------------------------------------------------------------------------------------#
+def generate_application_summary_chart(html_ptr, summaryData):
+    logger.info("Entering generate_application_summary_chart")
+    html_ptr.write('''  
+        var applicationLicenses = document.getElementById("applicationLicenses");
+        var applicationLicensesChart = new Chart(applicationLicenses, {
+            type: 'horizontalBar',
+            data: {
+                labels: ["Application Summary"],
+                datasets: [{
+                    // P1 items
+                    label: 'Strong Copyleft',
+                    data: [%s],
+                    backgroundColor: "#C00000"
+                },{
+                    // P2 items
+                    label: 'Weak Copyleft/Commercial',
+                    data: [%s],
+                    backgroundColor: "#FFFF00"
+                },{
+                    // P3 items
+                    label: 'Permissive/Public Domain',
+                    data: [%s],
+                    backgroundColor: "#008000"
+                }]
+            },
+
+            options: defaultBarChartOptions,
+        });
+        applicationLicensesChart.options.title.text = "License Summary"
+        applicationLicensesChart.options.scales.yAxes[0].ticks.display = false
+
+        ''' %(summaryData["P1Licenses"], summaryData["P2Licenses"], summaryData["P3Licenses"])  )
+
+   
+    html_ptr.write(''' 
+    
+    var applicationVulnerabilities= document.getElementById("applicationVulnerabilities");
+    var applicationVulnerabilityChart = new Chart(applicationVulnerabilities, {
+        type: 'horizontalBar',
+        data: {
+            labels: ["Application Summary"],
+            datasets: [{
+                // Critical Vulnerabilities
+                label: 'Critical',
+                data: [%s],
+                backgroundColor: "#400000"
+            },{
+                // High Vulnerabilities
+                label: 'High',
+                data: [%s],
+                backgroundColor: "#C00000"
+            },{
+                // Medium Vulnerabilities
+                label: 'Medium',
+                data: [%s],
+                backgroundColor: "#FFA500"
+            },{
+                // Low Vulnerabilities
+                label: 'Low',
+                data: [%s],
+                backgroundColor: "#FFFF00"
+            },{
+                // N/A Vulnerabilities
+                label: 'N/A',
+                data: [%s],
+                backgroundColor: "#D3D3D3"
+            },
+            ]
+        },
+
+        options: defaultBarChartOptions,
+        
+    });
+    applicationVulnerabilityChart.options.title.text = "Vulnerability Summary"
+    applicationVulnerabilityChart.options.scales.yAxes[0].ticks.display = false
+    
+    ''' %(summaryData["numCriticalVulnerabilities"], summaryData["numHighVulnerabilities"], summaryData["numMediumVulnerabilities"], summaryData["numLowVulnerabilities"], summaryData["numNoneVulnerabilities"]) )
+    
+
+    html_ptr.write('''  
+    var applicationReviewStatus = document.getElementById("applicationReviewStatus");
+    var applicationReviewStatusChart = new Chart(applicationReviewStatus, {
+        type: 'horizontalBar',
+        data: {
+            labels: ["Application Summary"],
+            datasets: [{
+                label: 'Approved',
+                data: [%s],
+                backgroundColor: "#008000"
+            },{
+                label: 'Rejected',
+                data: [%s],
+                backgroundColor: "#C00000"
+            },{
+                label: 'Unreviewed',
+                data: [%s],
+                backgroundColor: "#d0d0d0"
+            }]
+        },
+
+        options: defaultBarChartOptions,
+        
+    });
+
+    applicationReviewStatusChart.options.title.text = "Review Status Summary"
+    applicationReviewStatusChart.options.scales.yAxes[0].ticks.display = false
+    
+    ''' %(summaryData["numApproved"], summaryData["numRejected"], summaryData["numDraft"]) )
+
+
 #----------------------------------------------------------------------------------------#
 def generate_project_summary_charts(html_ptr, summaryData):
     logger.info("Entering generate_project_summary_charts")
-
-    print(summaryData)
-
-    html_ptr.write('''  
-    var defaultBarChartOptions = {
-    layout: {
-        padding: {
-            bottom: 25  //set that fits the best
-        }
-    },
-    tooltips: {
-        enabled: true,
-         yAlign: 'center'
-    },
-    title: {
-        display: true,
-    },
-
-    scales: {
-        xAxes: [{
-            ticks: {
-                beginAtZero:true,
-                fontFamily: "'Open Sans Bold', sans-serif",
-                fontSize:11
-             },
-            scaleLabel:{
-                display:false
-            },
-            gridLines: {
-            }, 
-            stacked: true
-        }],
-        yAxes: [{
-            gridLines: {
-                display:false,
-                color: "#fff",
-                zeroLineColor: "#fff",
-                zeroLineWidth: 0
-            },
-            ticks: {
-                fontFamily: "'Open Sans Bold', sans-serif",
-                fontSize:11
-            },
-
-            stacked: true
-        }]
-    },
-    legend:{
-        display:false
-    },
-    
-};  ''')
 
     html_ptr.write('''  
         var projectLicenses = document.getElementById("projectLicenses");
@@ -534,78 +666,6 @@ def generate_project_summary_charts(html_ptr, summaryData):
         
     });
 
-projectReviewStatusChart.options.title.text = "Review Status Summary"
-    
+    projectReviewStatusChart.options.title.text = "Review Status Summary"
     
     ''' %(summaryData["projectData"]["projectNames"], summaryData["projectData"]["numApproved"], summaryData["projectData"]["numRejected"], summaryData["projectData"]["numDraft"]) )
-
-
-#----------------------------------------------------------------------------------------#
-def display_product_summary_table(html_ptr, productData, encodedStatusApprovedIcon, encodedStatusRejectedIcon, encodedStatusDraftIcon):
-
-
-    numApproved = productData["numApproved"]
-    numRejected = productData["numRejected"] 
-    numDraft = productData["numDraft"] 
-
-    P1Licenses = productData["P1Licenses"]
-    P2Licenses = productData["P2Licenses"] 
-    P3Licenses = productData["P3Licenses"] 
-    NALicenses = productData["NALicenses"]
-    numTotalVulnerabilities = productData["numTotalVulnerabilities"]
-    numCriticalVulnerabilities = productData["numCriticalVulnerabilities"]
-    numHighVulnerabilities = productData["numHighVulnerabilities"]
-    numMediumVulnerabilities = productData["numMediumVulnerabilities"]
-    numLowVulnerabilities = productData["numLowVulnerabilities"]
-    numNoneVulnerabilities = productData["numNoneVulnerabilities"]
-   
-    html_ptr.write("<table id='productSummaryData' class='table table-hover table-sm row-border' style='width:90%'>\n")
-
-    html_ptr.write("    <thead>\n")
-    html_ptr.write("        <tr>\n")
-    html_ptr.write("            <th colspan='8' class='text-center'><h4>Product Summary</h4></th>\n") 
-    html_ptr.write("        </tr>\n") 
-    html_ptr.write("        <tr>\n") 
-    html_ptr.write("            <th style='width: 10%' class='text-center'>LICENSE PRIORITIES</th>\n") 
-    html_ptr.write("            <th style='width: 15%' class='text-center'>VULNERABILITIES</th>\n")
-    html_ptr.write("            <th style='width: 15%' class='text-center'>REVIEW SUMMARY</th>\n")
-    html_ptr.write("        </tr>\n")
-    html_ptr.write("    </thead>\n")  
-    html_ptr.write("    <tbody>\n")
-               
-    
-    html_ptr.write("        <tr> \n")
-    html_ptr.write("            <td class='text-center text-nowrap' data-sort='%s' >\n" %P1Licenses)
-    html_ptr.write("                <span class='btn btn-license btn-P1'>%s</span>\n" %(P1Licenses))
-    html_ptr.write("                <span class='btn btn-license btn-P2'>%s</span>\n" %(P2Licenses))
-    html_ptr.write("                <span class='btn btn-license btn-P3'>%s</span>\n" %(P3Licenses))
-    html_ptr.write("                <span class='btn btn-license btn-none'>%s</span>\n" %(NALicenses))
-    html_ptr.write("            </td>\n")
-
-
-    html_ptr.write("            <td class='text-center text-nowrap' data-sort='%s' >\n" %numCriticalVulnerabilities)
-    # Write in single line to remove spaces between btn spans
-    if numTotalVulnerabilities > 0:
-        html_ptr.write("                <span class='btn btn-vuln btn-critical'>%s</span>\n" %(numCriticalVulnerabilities))
-        html_ptr.write("                <span class='btn btn-vuln btn-high'>%s</span>\n" %(numHighVulnerabilities))
-        html_ptr.write("                <span class='btn btn-vuln btn-medium'>%s</span>\n" %(numMediumVulnerabilities))
-        html_ptr.write("                <span class='btn btn-vuln btn-low'>%s</span>\n" %(numLowVulnerabilities))
-        html_ptr.write("                <span class='btn btn-vuln btn-none'>%s</span>\n" %(numNoneVulnerabilities))
-    else:
-        html_ptr.write("                <span class='btn btn-vuln btn-no-vulns'>None</span>\n")
-    html_ptr.write("            </td> \n")
-
-   
-    html_ptr.write("            <td class='text-center text-nowrap' style='color:gray;'>")
-    html_ptr.write("<img src='data:image/png;base64, %s' width='15px' height='15px' style='margin-top: -2px; padding-left: -10px;'> %s" %(encodedStatusApprovedIcon.decode('utf-8'), numApproved))
-    html_ptr.write("            &nbsp &nbsp \n")
-    html_ptr.write("<img src='data:image/png;base64, %s' width='15px' height='15px' style='margin-top: -2px; padding-left: -10px'> %s" %(encodedStatusRejectedIcon.decode('utf-8'), numRejected))
-    html_ptr.write("            &nbsp &nbsp \n")
-    html_ptr.write("<img src='data:image/png;base64, %s' width='15px' height='15px' style='margin-top: -2px; padding-left: -10px'> %s" %(encodedStatusDraftIcon.decode('utf-8'), numDraft))
-    html_ptr.write("            </td> \n")
-    html_ptr.write("        </tr> \n")
-
-    html_ptr.write("    </tbody>\n")
-
-
-    html_ptr.write("</table>\n")  
