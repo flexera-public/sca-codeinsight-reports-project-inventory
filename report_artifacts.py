@@ -154,23 +154,27 @@ def generate_html_report(reportData):
     #######################################################################
     #  Create table to hold the application summary charts.
     #  js script itself is added later
-    html_ptr.write("<table id='applicationSummary' class='table' style='width:90%'>\n")
+    html_ptr.write("<table id='projectSummary' class='table' style='width:90%'>\n")
     html_ptr.write("    <thead>\n")
     html_ptr.write("        <tr>\n")
-    if len(projectData) > 1:
-        html_ptr.write("            <th colspan='8' class='text-center'><h4>Application Summary</h4></th>\n") 
-    else:
-        html_ptr.write("            <th colspan='8' class='text-center'><h4>%s Summary</h4></th>\n" %baseProjectName) 
+    html_ptr.write("            <th colspan='8' class='text-center'><h4>Application Summary</h4></th>\n") 
     html_ptr.write("        </tr>\n") 
     html_ptr.write("    </thead>\n")
-    html_ptr.write("    <tbody>\n")
-    html_ptr.write("        <tr>\n")
-    html_ptr.write("            <td style='width: 33%'><canvas id='applicationLicenses'></canvas>  </td>\n")
-    html_ptr.write("            <td style='width: 33%'><canvas id='applicationVulnerabilities'></canvas>  </td>\n")
-    html_ptr.write("            <td style='width: 33%'><canvas id='applicationReviewStatus'></canvas>  </td>\n")
-    html_ptr.write("        </tr>\n")
-    html_ptr.write("    </tbody>\n")
     html_ptr.write("</table>\n")
+    
+    html_ptr.write("<div class='container'>\n")
+    html_ptr.write("    <div class='row'>\n")
+    html_ptr.write("        <div class='col-sm'>\n")
+    html_ptr.write("            <canvas id='applicationLicenses'></canvas>\n")
+    html_ptr.write("        </div>\n")
+    html_ptr.write("        <div class='col-sm'>\n")
+    html_ptr.write("            <canvas id='applicationVulnerabilities'></canvas>\n")
+    html_ptr.write("         </div>\n")
+    html_ptr.write("        <div class='col-sm'>\n")
+    html_ptr.write("            <canvas id='applicationReviewStatus'></canvas>\n")
+    html_ptr.write("        </div>\n")
+    html_ptr.write("    </div>\n")
+    html_ptr.write("</div>\n")
 
     html_ptr.write("<hr class='small'>\n")
 
@@ -178,20 +182,27 @@ def generate_html_report(reportData):
         #######################################################################
         #  Create table to hold the project summary charts.
         #  js script itself is added later
+
         html_ptr.write("<table id='projectSummary' class='table' style='width:90%'>\n")
         html_ptr.write("    <thead>\n")
         html_ptr.write("        <tr>\n")
         html_ptr.write("            <th colspan='8' class='text-center'><h4>Project Summaries</h4></th>\n") 
         html_ptr.write("        </tr>\n") 
         html_ptr.write("    </thead>\n")
-        html_ptr.write("    <tbody>\n")
-        html_ptr.write("        <tr>\n")
-        html_ptr.write("            <td style='width: 33%'><canvas id='projectLicenses'></canvas>  </td>\n")
-        html_ptr.write("            <td style='width: 33%'><canvas id='projectVulnerabilities'></canvas>  </td>\n")
-        html_ptr.write("            <td style='width: 33%'><canvas id='projectReviewStatus'></canvas>  </td>\n")
-        html_ptr.write("        </tr>\n")
-        html_ptr.write("    </tbody>\n")
         html_ptr.write("</table>\n")
+        html_ptr.write("<div class='container'>\n")
+        html_ptr.write("    <div class='row'>\n")
+        html_ptr.write("        <div class='col-sm'>\n")
+        html_ptr.write("            <canvas id='projectLicenses'></canvas>\n")
+        html_ptr.write("        </div>\n")
+        html_ptr.write("        <div class='col-sm'>\n")
+        html_ptr.write("            <canvas id='projectVulnerabilities'></canvas>\n")
+        html_ptr.write("         </div>\n")
+        html_ptr.write("        <div class='col-sm'>\n")
+        html_ptr.write("            <canvas id='projectReviewStatus'></canvas>\n")
+        html_ptr.write("        </div>\n")
+        html_ptr.write("    </div>\n")
+        html_ptr.write("</div>\n")
 
         html_ptr.write("<hr class='small'>")
 
@@ -203,13 +214,13 @@ def generate_html_report(reportData):
     html_ptr.write("        </tr>\n") 
     html_ptr.write("        <tr>\n") 
     html_ptr.write("            <th style='width: 15%' class='text-center'>PROJECT</th>\n") 
-    html_ptr.write("            <th style='width: 25%' class='text-center'>INVENTORY ITEM</th>\n") 
+    html_ptr.write("            <th style='width: 25%' class='text-center text-nowrap'>INVENTORY ITEM</th>\n") 
     html_ptr.write("            <th style='width: 10%' class='text-center'>PRIORITY</th>\n") 
     html_ptr.write("            <th style='width: 15%' class='text-center'>COMPONENT</th>\n")
     html_ptr.write("            <th style='width: 5%' class='text-center'>VERSION</th>\n")
     html_ptr.write("            <th style='width: 5%' class='text-center'>LICENSE</th>\n") 
     html_ptr.write("            <th style='width: 18%' class='text-center'>VULNERABILITIES</th>\n")
-    html_ptr.write("            <th style='width: 7%' class='text-center'>REVIEW STATUS</th>\n")
+    html_ptr.write("            <th style='width: 7%' class='text-center text-nowrap'>REVIEW STATUS</th>\n")
     html_ptr.write("        </tr>\n")
     html_ptr.write("    </thead>\n")  
     html_ptr.write("    <tbody>\n")  
@@ -405,6 +416,8 @@ def add_default_chart_options(html_ptr):
     # Add commont defaults for display charts
     html_ptr.write('''  
         var defaultBarChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
         layout: {
             padding: {
                 bottom: 25  //set that fits the best
@@ -424,7 +437,7 @@ def add_default_chart_options(html_ptr):
                     beginAtZero:true,
                     fontFamily: "'Open Sans Bold', sans-serif",
                     fontSize:11,
-                    callback: function(value) {if (value % 1 === 0) {return value;}}
+
                 },
                 scaleLabel:{
                     display:false
@@ -462,7 +475,6 @@ def generate_application_summary_chart(html_ptr, summaryData):
         var applicationLicensesChart = new Chart(applicationLicenses, {
             type: 'horizontalBar',
             data: {
-                labels: ["Application Summary"],
                 datasets: [{
                     // P1 items
                     label: 'Strong Copyleft',
@@ -484,7 +496,7 @@ def generate_application_summary_chart(html_ptr, summaryData):
             options: defaultBarChartOptions,
         });
         applicationLicensesChart.options.title.text = "License Summary"
-        applicationLicensesChart.options.scales.yAxes[0].ticks.display = false
+        applicationLicensesChart.options.tooltips.titleFontSize = 0
 
         ''' %(summaryData["P1Licenses"], summaryData["P2Licenses"], summaryData["P3Licenses"])  )
 
@@ -495,7 +507,6 @@ def generate_application_summary_chart(html_ptr, summaryData):
     var applicationVulnerabilityChart = new Chart(applicationVulnerabilities, {
         type: 'horizontalBar',
         data: {
-            labels: ["Application Summary"],
             datasets: [{
                 // Critical Vulnerabilities
                 label: 'Critical',
@@ -529,7 +540,7 @@ def generate_application_summary_chart(html_ptr, summaryData):
         
     });
     applicationVulnerabilityChart.options.title.text = "Vulnerability Summary"
-    applicationVulnerabilityChart.options.scales.yAxes[0].ticks.display = false
+    applicationVulnerabilityChart.options.tooltips.titleFontSize = 0
     
     ''' %(summaryData["numCriticalVulnerabilities"], summaryData["numHighVulnerabilities"], summaryData["numMediumVulnerabilities"], summaryData["numLowVulnerabilities"], summaryData["numNoneVulnerabilities"]) )
     
@@ -539,7 +550,6 @@ def generate_application_summary_chart(html_ptr, summaryData):
     var applicationReviewStatusChart = new Chart(applicationReviewStatus, {
         type: 'horizontalBar',
         data: {
-            labels: ["Application Summary"],
             datasets: [{
                 label: 'Approved',
                 data: [%s],
@@ -560,7 +570,7 @@ def generate_application_summary_chart(html_ptr, summaryData):
     });
 
     applicationReviewStatusChart.options.title.text = "Review Status Summary"
-    applicationReviewStatusChart.options.scales.yAxes[0].ticks.display = false
+    applicationReviewStatusChart.options.tooltips.titleFontSize = 0
     
     ''' %(summaryData["numApproved"], summaryData["numRejected"], summaryData["numDraft"]) )
 
