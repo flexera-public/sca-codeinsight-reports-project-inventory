@@ -423,7 +423,8 @@ def add_default_chart_options(html_ptr):
                 ticks: {
                     beginAtZero:true,
                     fontFamily: "'Open Sans Bold', sans-serif",
-                    fontSize:11
+                    fontSize:11,
+                    callback: function(value) {if (value % 1 === 0) {return value;}}
                 },
                 scaleLabel:{
                     display:false
