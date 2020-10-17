@@ -12,9 +12,7 @@ import logging
 import os
 from datetime import datetime
 import base64
-import json
-from anytree.importer import DictImporter
-from anytree import RenderTree, AsciiStyle
+
 
 logger = logging.getLogger(__name__)
 
@@ -40,13 +38,10 @@ def generate_html_report(reportData):
     logger.info("    Entering generate_html_report")
 
     reportName = reportData["reportName"]
-    baseProjectName  = reportData["baseProjectName"]
-    projectID  = reportData["projectID"]
-    baseURL  = reportData["baseURL"]
     inventoryData = reportData["inventoryData"]
-    projectHierarchy = reportData["projectHierarchy"]
-    projectData = reportData["projectData"]
-    summaryData = reportData["summaryData"]
+    projectOrder = reportData["projectOrder"]
+    projectSummaryData = reportData["projectSummaryData"]
+    applicationSummaryData = reportData["applicationSummaryData"]
    
     scriptDirectory = os.path.dirname(os.path.realpath(__file__))
     cssFile =  os.path.join(scriptDirectory, "html-assets/css/revenera_common.css")
@@ -62,7 +57,6 @@ def generate_html_report(reportData):
     logger.debug("statusApprovedIcon: %s" %statusApprovedIcon)
     logger.debug("statusRejectedIcon: %s" %statusRejectedIcon)
     logger.debug("statusDraftIcon: %s" %statusDraftIcon)
-
 
     #########################################################
     #  Encode the image files
@@ -147,14 +141,10 @@ def generate_html_report(reportData):
     #---------------------------------------------------------------------------------------------------
     html_ptr.write("<!-- BEGIN BODY -->\n")  
 
-    if len(projectData) > 1:
-        display_simple_project_hierarchy(html_ptr, projectID, projectData, projectHierarchy)
-        html_ptr.write("<hr class='small'>")
-
     #######################################################################
     #  Create table to hold the application summary charts.
     #  js script itself is added later
-    html_ptr.write("<table id='projectSummary' class='table' style='width:90%'>\n")
+    html_ptr.write("<table id='applicationSummary' class='table' style='width:90%'>\n")
     html_ptr.write("    <thead>\n")
     html_ptr.write("        <tr>\n")
     html_ptr.write("            <th colspan='8' class='text-center'><h4>Application Summary</h4></th>\n") 
@@ -175,10 +165,12 @@ def generate_html_report(reportData):
     html_ptr.write("        </div>\n")
     html_ptr.write("    </div>\n")
     html_ptr.write("</div>\n")
+ 
+    # If there is some sort of hierarchy then show specific project summeries
+    if len(projectOrder) > 1:
 
-    html_ptr.write("<hr class='small'>\n")
+        html_ptr.write("<hr class='small'>\n")
 
-    if len(projectData) > 1:
         #######################################################################
         #  Create table to hold the project summary charts.
         #  js script itself is added later
@@ -190,22 +182,32 @@ def generate_html_report(reportData):
         html_ptr.write("        </tr>\n") 
         html_ptr.write("    </thead>\n")
         html_ptr.write("</table>\n")
+
         html_ptr.write("<div class='container'>\n")
         html_ptr.write("    <div class='row'>\n")
+
         html_ptr.write("        <div class='col-sm'>\n")
-        html_ptr.write("            <canvas id='projectLicenses'></canvas>\n")
+
+        display_simple_project_hierarchy(html_ptr, projectOrder)
+        
         html_ptr.write("        </div>\n")
         html_ptr.write("        <div class='col-sm'>\n")
-        html_ptr.write("            <canvas id='projectVulnerabilities'></canvas>\n")
-        html_ptr.write("         </div>\n")
-        html_ptr.write("        <div class='col-sm'>\n")
-        html_ptr.write("            <canvas id='projectReviewStatus'></canvas>\n")
+        html_ptr.write("            <div class='col-sm'>\n")
+        html_ptr.write("                <canvas id='projectLicenses'></canvas>\n")
+        html_ptr.write("            </div>\n")
+        html_ptr.write("            <div class='col-sm'>\n")
+        html_ptr.write("               <canvas id='projectVulnerabilities'></canvas>\n")
+        html_ptr.write("             </div>\n")
+        html_ptr.write("            <div class='col-sm'>\n")
+        html_ptr.write("               <canvas id='projectReviewStatus'></canvas>\n")
+        html_ptr.write("           </div>\n")
         html_ptr.write("        </div>\n")
         html_ptr.write("    </div>\n")
         html_ptr.write("</div>\n")
 
         html_ptr.write("<hr class='small'>")
 
+ 
     html_ptr.write("<table id='inventoryData' class='table table-hover table-sm row-border' style='width:90%'>\n")
 
     html_ptr.write("    <thead>\n")
@@ -356,10 +358,12 @@ def generate_html_report(reportData):
     # Add the common chartjs config
     add_default_chart_options(html_ptr)
     # Add the js for the application summary stacked bar charts
-    generate_application_summary_chart(html_ptr, summaryData)
-    # Add the js for the project summary stacked bar charts
-    generate_project_summary_charts(html_ptr, summaryData)
+    generate_application_summary_chart(html_ptr, applicationSummaryData)
 
+    if len(projectOrder) > 1:
+        # Add the js for the project summary stacked bar charts
+        generate_project_summary_charts(html_ptr, projectSummaryData)
+    
     html_ptr.write("</script>\n")
 
     html_ptr.write("</body>\n") 
@@ -385,30 +389,23 @@ def encodeImage(imageFile):
         raise
 
 #----------------------------------------------------------------------------------------#
-def display_simple_project_hierarchy(html_ptr, projectID, projectData, projectChildren):
 
-    logger.debug("Entering display_simple_project_hierarchy for project with ID %s" %projectID) 
+def display_simple_project_hierarchy(html_ptr, projectOrder):
+    logger.debug("Entering display_simple_project_hierarchy")
 
-    importer = DictImporter()
-    # Clean up the dictionary for anytree
-    updatedProjectChildren = json.loads(json.dumps(projectChildren).replace('"childProject":', '"children":'))
-    root = importer.import_(updatedProjectChildren)
+    html_ptr.write("<h6 class='gray' style='padding-top: 10px;'><center>Project Hierarchy</center></h6>") 
 
-    html_ptr.write("<div class='container' style='width:90%'>\n")
+    
+    for project in projectOrder:
+        projectName = project["projectName"]
+        indentation = project["indentation"]
+        projectLink = project["projectLink"]
 
-    for row in RenderTree(root, style=AsciiStyle(), childiter=project_sort):
+        indentation = int(indentation) * "&nbsp"
+        spacing = int(2) * "&nbsp"
 
-        projectName = row.node.name
-        projectID = row.node.id
-        projectLink = projectData[projectID]["projectLink"]
+        html_ptr.write("%s <hr class='small-gray' style='display:inline-block; width: 15px; vertical-align: middle'><a href='%s' target='_blank'><span class='hierarchy'>%s %s</span></a><br>\n" %(indentation, projectLink, spacing, projectName))
 
-        html_ptr.write("<pre>%s</pre><a href='%s' target='_blank'>%s</a><br>\n" %(row.pre, projectLink, projectName))
-
-    html_ptr.write("</div>\n")
-
-#----------------------------------------------------------------------------------------#
-def project_sort(projects):
-    return sorted(projects, key=lambda projects: projects.name)
 
 
 #----------------------------------------------------------------------------------------#
@@ -429,14 +426,16 @@ def add_default_chart_options(html_ptr):
         },
         title: {
             display: true,
+            fontColor: "#323E48"
         },
 
         scales: {
             xAxes: [{
                 ticks: {
                     beginAtZero:true,
-                    fontFamily: "'Open Sans Bold', sans-serif",
                     fontSize:11,
+                    fontColor: "#323E48",
+                    precision:0
 
                 },
                 scaleLabel:{
@@ -451,11 +450,12 @@ def add_default_chart_options(html_ptr):
                     display:false,
                     color: "#fff",
                     zeroLineColor: "#fff",
-                    zeroLineWidth: 0
+                    zeroLineWidth: 0,
+                    fontColor: "#323E48"
                 },
                 ticks: {
-                    fontFamily: "'Open Sans Bold', sans-serif",
-                    fontSize:11
+                    fontSize:11,
+                    fontColor: "#323E48"
                 },
 
                 stacked: true
@@ -468,7 +468,7 @@ def add_default_chart_options(html_ptr):
     };  ''')
 
 #----------------------------------------------------------------------------------------#
-def generate_application_summary_chart(html_ptr, summaryData):
+def generate_application_summary_chart(html_ptr, applicationSummaryData):
     logger.info("Entering generate_application_summary_chart")
     html_ptr.write('''  
         var applicationLicenses = document.getElementById("applicationLicenses");
@@ -498,7 +498,7 @@ def generate_application_summary_chart(html_ptr, summaryData):
         applicationLicensesChart.options.title.text = "License Summary"
         applicationLicensesChart.options.tooltips.titleFontSize = 0
 
-        ''' %(summaryData["P1Licenses"], summaryData["P2Licenses"], summaryData["P3Licenses"])  )
+        ''' %(applicationSummaryData["numP1Licenses"], applicationSummaryData["numP2Licenses"], applicationSummaryData["numP3Licenses"])  )
 
    
     html_ptr.write(''' 
@@ -542,7 +542,7 @@ def generate_application_summary_chart(html_ptr, summaryData):
     applicationVulnerabilityChart.options.title.text = "Vulnerability Summary"
     applicationVulnerabilityChart.options.tooltips.titleFontSize = 0
     
-    ''' %(summaryData["numCriticalVulnerabilities"], summaryData["numHighVulnerabilities"], summaryData["numMediumVulnerabilities"], summaryData["numLowVulnerabilities"], summaryData["numNoneVulnerabilities"]) )
+    ''' %(applicationSummaryData["numCriticalVulnerabilities"], applicationSummaryData["numHighVulnerabilities"], applicationSummaryData["numMediumVulnerabilities"], applicationSummaryData["numLowVulnerabilities"], applicationSummaryData["numNoneVulnerabilities"]) )
     
 
     html_ptr.write('''  
@@ -572,11 +572,11 @@ def generate_application_summary_chart(html_ptr, summaryData):
     applicationReviewStatusChart.options.title.text = "Review Status Summary"
     applicationReviewStatusChart.options.tooltips.titleFontSize = 0
     
-    ''' %(summaryData["numApproved"], summaryData["numRejected"], summaryData["numDraft"]) )
+    ''' %(applicationSummaryData["numApproved"], applicationSummaryData["numRejected"], applicationSummaryData["numDraft"]) )
 
 
 #----------------------------------------------------------------------------------------#
-def generate_project_summary_charts(html_ptr, summaryData):
+def generate_project_summary_charts(html_ptr, projectSummaryData):
     logger.info("Entering generate_project_summary_charts")
 
     html_ptr.write('''  
@@ -608,7 +608,7 @@ def generate_project_summary_charts(html_ptr, summaryData):
         });
         projectLicensesChart.options.title.text = "License Summary"
 
-        ''' %(summaryData["projectData"]["projectNames"], summaryData["projectData"]["P1Licenses"], summaryData["projectData"]["P2Licenses"], summaryData["projectData"]["P3Licenses"])  )
+        ''' %(projectSummaryData["projectNames"], projectSummaryData["numP1Licenses"], projectSummaryData["numP2Licenses"], projectSummaryData["numP3Licenses"])  )
 
     html_ptr.write(''' 
     
@@ -652,7 +652,7 @@ def generate_project_summary_charts(html_ptr, summaryData):
     projectVulnerabilityChart.options.title.text = "Vulnerability Summary"
     
     
-    ''' %(summaryData["projectData"]["projectNames"], summaryData["projectData"]["numCriticalVulnerabilities"], summaryData["projectData"]["numHighVulnerabilities"], summaryData["projectData"]["numMediumVulnerabilities"], summaryData["projectData"]["numLowVulnerabilities"], summaryData["projectData"]["numNoneVulnerabilities"]) )
+    ''' %(projectSummaryData["projectNames"], projectSummaryData["numCriticalVulnerabilities"], projectSummaryData["numHighVulnerabilities"], projectSummaryData["numMediumVulnerabilities"], projectSummaryData["numLowVulnerabilities"], projectSummaryData["numNoneVulnerabilities"]) )
     
 
     html_ptr.write('''  
@@ -682,4 +682,4 @@ def generate_project_summary_charts(html_ptr, summaryData):
 
     projectReviewStatusChart.options.title.text = "Review Status Summary"
     
-    ''' %(summaryData["projectData"]["projectNames"], summaryData["projectData"]["numApproved"], summaryData["projectData"]["numRejected"], summaryData["projectData"]["numDraft"]) )
+    ''' %(projectSummaryData["projectNames"], projectSummaryData["numApproved"], projectSummaryData["numRejected"], projectSummaryData["numDraft"]) )

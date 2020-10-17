@@ -9,7 +9,10 @@ File : report_data.py
 '''
 
 import logging
-from operator import itemgetter
+import json
+from anytree.importer import DictImporter
+from anytree import RenderTree, AsciiStyle
+
 import CodeInsight_RESTAPIs.project.get_child_projects
 import CodeInsight_RESTAPIs.project.get_project_inventory
 
@@ -19,18 +22,22 @@ logger = logging.getLogger(__name__)
 def gather_data_for_report(baseURL, projectID, authToken, reportName):
     logger.info("Entering gather_data_for_report")
 
-    projectIDs = [] # Create a list to contain a list of all project IDs
-    childProjectMappings = {}  # Create a dictionary to map parent to child projects wtih parent ID as key
     inventoryData = {}  # Create a dictionary containing the inventory data using inventoryID as keys
     projectData = {} # Create a dictionary containing the project level summary data using projectID as keys
 
     # Get the list of parent/child projects start at the base project
     projectHierarchy = CodeInsight_RESTAPIs.project.get_child_projects.get_child_projects_recursively(baseURL, projectID, authToken)
-    baseProjectName = projectHierarchy["name"]
 
-    projectIDs, childProjectMappings = get_direct_child_project_details(projectHierarchy, projectIDs, childProjectMappings)
+    # Create a list of the projects the correct display order with name, ID and indentation
+    projectOrder = get_project_order(projectHierarchy, baseURL)
+    
+    #  Gather the details for each project and summerize the data
+    for project in projectOrder:
 
-    for projectID in projectIDs:
+        projectID = project["projectID"]
+        projectName = project["projectName"]
+        projectLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory"
+
         # Get details for  project
         try:
             projectInventoryResponse = CodeInsight_RESTAPIs.project.get_project_inventory.get_project_inventory_details(baseURL, projectID, authToken)
@@ -40,7 +47,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
             return -1
 
         # Create empty dictionary for project level data for this project
-        projectData[projectID] = {}
+        projectData[projectName] = {}
 
         #############################################
         #  This area will be replaced by 2020R4 APIs
@@ -48,10 +55,10 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
         numApproved = 0
         numRejected = 0
         numDraft = 0
-        P1Licenses = 0
-        P2Licenses = 0
-        P3Licenses = 0
-        NALicenses = 0
+        numP1Licenses = 0
+        numP2Licenses = 0
+        numP3Licenses = 0
+        numNALicenses = 0
         numTotalVulnerabilities = 0
         numCriticalVulnerabilities = 0
         numHighVulnerabilities = 0
@@ -77,13 +84,9 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
             componentUrl = inventoryItem["componentUrl"]
             selectedLicenseUrl = inventoryItem["selectedLicenseUrl"]
             inventoryID = inventoryItem["id"]
-            inventoryReviewStatus = inventoryItem["inventoryReviewStatus"]
-
-            
+            inventoryReviewStatus = inventoryItem["inventoryReviewStatus"]          
             inventoryLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory&pinv=" + str(inventoryID)
-            projectLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory"
             
-
             logger.debug("Processing iventory items %s of %s" %(currentItem, totalNumberIventory))
             logger.debug("    %s" %(inventoryItemName))
             
@@ -134,13 +137,13 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
                 P1InventoryItems +=1
 
             if selectedLicensePriority == 1:
-                P1Licenses += 1
+                numP1Licenses += 1
             elif selectedLicensePriority == 2:
-                P2Licenses += 1
+                numP2Licenses += 1
             elif selectedLicensePriority == 3:
-                P3Licenses += 1
+                numP3Licenses += 1
             elif selectedLicensePriority == "N/A":
-                NALicenses += 1
+                numNALicenses += 1
             else:
                 logger.error("Unknown license priority: %s" %selectedLicensePriority)
 
@@ -152,66 +155,41 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
                 numLowVulnerabilities += vulnerabilityData["numLowVulnerabilities"]
                 numNoneVulnerabilities += vulnerabilityData["numNoneVulnerabilities"]
 
-        projectData[projectID]["projectName"] = projectName
-        projectData[projectID]["P1InventoryItems"] = P1InventoryItems
-        projectData[projectID]["numApproved"] = numApproved
-        projectData[projectID]["numRejected"] = numRejected
-        projectData[projectID]["numDraft"] = numDraft
-        projectData[projectID]["P1Licenses"] = P1Licenses
-        projectData[projectID]["P2Licenses"] = P2Licenses
-        projectData[projectID]["P3Licenses"] = P3Licenses
-        projectData[projectID]["NALicenses"] = NALicenses
-        projectData[projectID]["numTotalVulnerabilities"] = numTotalVulnerabilities
-        projectData[projectID]["numCriticalVulnerabilities"] = numCriticalVulnerabilities
-        projectData[projectID]["numHighVulnerabilities"] = numHighVulnerabilities
-        projectData[projectID]["numMediumVulnerabilities"] = numMediumVulnerabilities
-        projectData[projectID]["numLowVulnerabilities"] = numLowVulnerabilities
-        projectData[projectID]["numNoneVulnerabilities"] = numNoneVulnerabilities
-        projectData[projectID]["projectLink"] = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory"
+        projectData[projectName]["P1InventoryItems"] = P1InventoryItems
+        projectData[projectName]["numApproved"] = numApproved
+        projectData[projectName]["numRejected"] = numRejected
+        projectData[projectName]["numDraft"] = numDraft
+        projectData[projectName]["numP1Licenses"] = numP1Licenses
+        projectData[projectName]["numP2Licenses"] = numP2Licenses
+        projectData[projectName]["numP3Licenses"] = numP3Licenses
+        projectData[projectName]["numNALicenses"] = numNALicenses
+        projectData[projectName]["numTotalVulnerabilities"] = numTotalVulnerabilities
+        projectData[projectName]["numCriticalVulnerabilities"] = numCriticalVulnerabilities
+        projectData[projectName]["numHighVulnerabilities"] = numHighVulnerabilities
+        projectData[projectName]["numMediumVulnerabilities"] = numMediumVulnerabilities
+        projectData[projectName]["numLowVulnerabilities"] = numLowVulnerabilities
+        projectData[projectName]["numNoneVulnerabilities"] = numNoneVulnerabilities
+        projectData[projectName]["projectLink"] = projectLink
 
+    # Take the project data and create the lists needed for the chart data
+    projectSummaryData = get_project_summary_data(projectData)
 
+    # Roll up the individual project info to the application level
+    applicationSummaryData = get_application_summary_data(projectSummaryData)
 
-    # Roll up the project summarys for the full product
-    summaryData = gather_summary_data(projectData)
-
+    # Build up the data to return for the
     reportData = {}
     reportData["reportName"] = reportName
-    reportData["projectID"] = projectID
-    reportData["baseProjectName"] = baseProjectName
-    reportData["projectHierarchy"] =projectHierarchy
     reportData["inventoryData"] = inventoryData
-    reportData["projectData"] = projectData
-    reportData["summaryData"] = summaryData
-    reportData["baseURL"] = baseURL
+    reportData["projectOrder"] =projectOrder
+    reportData["projectSummaryData"] = projectSummaryData
+    reportData["applicationSummaryData"] = applicationSummaryData
+
 
     logger.info("Exiting gather_data_for_report")
 
     return reportData
-
-
-#----------------------------------------------------------------------------------------#
-def project_sort(projects):
-    return sorted(projects, key=lambda projects: projects.name)
-   
-#----------------------------------------------------------------------------------------#
-def get_direct_child_project_details(projectHierarchy, projectIDs, childProjectMappings):
-    
-    # Recursive function to get the required data from a child project
-    projectID = projectHierarchy["id"]
-    projectIDs.append(projectID)
-    childProjects = projectHierarchy["childProject"]
-
-    if len(childProjects) > 0:
-        childProjectMappings[projectID] = []
-      
-        for childProject in childProjects:
-            childProjectID = childProject["id"]
-            childProjectMappings[projectID].append(childProjectID)
-
-            projectIDs, childProjectMappings = get_direct_child_project_details(childProject, projectIDs, childProjectMappings)
-
-    return projectIDs, childProjectMappings
-
+  
 #----------------------------------------------------------------------
 def get_vulnerability_summary(vulnerabilities):
     logger.info("Entering get_vulnerability_summary")
@@ -237,10 +215,8 @@ def get_vulnerability_summary(vulnerabilities):
             numMediumVulnerabilities +=1
         elif vulnerabilityCvssV3Severity == "LOW":
             numLowVulnerabilities +=1
-        elif vulnerabilityCvssV3Severity == "N/A":
-            numNoneVulnerabilities +=1
-        elif vulnerabilityCvssV3Severity == "NONE":
-            numNoneVulnerabilities +=1            
+        elif vulnerabilityCvssV3Severity == "N/A" or vulnerabilityCvssV3Severity == "NONE":
+            numNoneVulnerabilities +=1       
         else:
             logger.error("Unknown vulnerability severity: %s" %vulnerabilityCvssV3Severity)
 
@@ -253,88 +229,78 @@ def get_vulnerability_summary(vulnerabilities):
 
     return vulnerabilityData
 
-
 #----------------------------------------------------------------------
-def gather_summary_data(projectData):
-    logger.debug("Entering calculate_product_summary")
+def get_project_order(projectHierarchy, baseURL):
+    logger.debug("Entering get_project_order")
 
-    productData = {}
-    productData["numApproved"] = 0
-    productData["numRejected"] = 0
-    productData["numDraft"] = 0
-    productData["P1Licenses"] = 0
-    productData["P2Licenses"] = 0
-    productData["P3Licenses"] = 0
-    productData["NALicenses"] = 0
-    productData["numTotalVulnerabilities"] = 0
-    productData["numCriticalVulnerabilities"] = 0
-    productData["numHighVulnerabilities"] = 0
-    productData["numMediumVulnerabilities"] = 0
-    productData["numLowVulnerabilities"] = 0
-    productData["numNoneVulnerabilities"] = 0
+    importer = DictImporter()
 
-    productData["projectData"] = {}
+    # Clean up the hierchy dict for use for importer
+    updatedprojectHierarchy = json.loads(json.dumps(projectHierarchy).replace('"childProject":', '"children":'))
+    root = importer.import_(updatedprojectHierarchy)
 
-    # Create lists to contain the summary data for project information for the bar charts
-    productData["projectData"]["projectNames"] = []
-    productData["projectData"]["numApproved"] = []
-    productData["projectData"]["numRejected"] = []
-    productData["projectData"]["numDraft"] = []
-    productData["projectData"]["P1Licenses"] = []
-    productData["projectData"]["P2Licenses"] = []
-    productData["projectData"]["P3Licenses"] = []
-    productData["projectData"]["NALicenses"] = []
-    productData["projectData"]["numCriticalVulnerabilities"] = []
-    productData["projectData"]["numHighVulnerabilities"] = []
-    productData["projectData"]["numMediumVulnerabilities"] = []
-    productData["projectData"]["numLowVulnerabilities"] = []
-    productData["projectData"]["numNoneVulnerabilities"] = []
+    # Create list for the projects in the correct order
+    projectOrder = []
 
+    for row in RenderTree(root, style=AsciiStyle(), childiter=project_sort):
 
+        # For output purposes create a dict that contains the project name, id, indentation and link
+        projectDetails = {}
+        projectDetails["projectName"] = row.node.name
+        projectDetails["projectID"] = row.node.id
+        projectDetails["indentation"] = (len(row.pre))
+        projectDetails["projectLink"] = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectDetails["projectID"]) + "&tab=projectInventory"
 
-    for project in projectData:
+        projectOrder.append(projectDetails)
 
-        productData["projectData"]["projectNames"].append(projectData[project]["projectName"])
+        # Build up the 
 
-        productData["numApproved"] += projectData[project]["numApproved"]
-        productData["projectData"]["numApproved"] .append(projectData[project]["numApproved"])
+    return projectOrder
 
-        productData["numRejected"] += projectData[project]["numRejected"]
-        productData["projectData"]["numRejected"].append(projectData[project]["numRejected"]) 
+#----------------------------------------------------------------------------------------#
+def project_sort(projects):
+    return sorted(projects, key=lambda projects: projects.name)
 
-        productData["numDraft"] += projectData[project]["numDraft"]
-        productData["projectData"]["numDraft"] .append(projectData[project]["numDraft"]) 
+#----------------------------------------------------------------------------------------#
+def get_project_summary_data(projectData):
+    logger.debug("Entering get_project_summary_data")
 
-        productData["P1Licenses"] += projectData[project]["P1Licenses"]
-        productData["projectData"]["P1Licenses"] .append(projectData[project]["P1Licenses"])
+   # For the chart data we need to create lists where each element is in the correct order based on the 
+   # project name order.  i.e. one list will # of approved items for each project in the correct order
+    projectSummaryData = {}
 
-        productData["P2Licenses"] += projectData[project]["P2Licenses"] 
-        productData["projectData"]["P2Licenses"].append(projectData[project]["P2Licenses"])
+    # Create empty lists for each metric that we need for the report
+    for projectName in projectData:
+        for metric in projectData[projectName]:
+            if metric not in  ["P1InventoryItems", "projectLink"]:  # We don't care about these for now
+                projectSummaryData[metric] = []
 
-        productData["P3Licenses"]  += projectData[project]["P3Licenses"]
-        productData["projectData"]["P3Licenses"].append(projectData[project]["P3Licenses"])
+    # Grab the data for each project and add it in the correct order
+    for projectName in projectData:
+        for metric in projectData[projectName]:
+            if metric not in  ["P1InventoryItems", "projectLink"]:  # We don't care about these for now
+                projectSummaryData[metric].append(projectData[projectName][metric])
 
-        productData["NALicenses"] += projectData[project]["NALicenses"]
-        productData["projectData"]["NALicenses"].append(projectData[project]["NALicenses"])
+    projectSummaryData["projectNames"] = list(projectData.keys())
+    
+    logger.debug("Exiting get_project_summary_data")
+    return projectSummaryData
+    
+#----------------------------------------------------------------------------------------#
+def get_application_summary_data(projectSummaryData):
+    logger.debug("Entering get_application_summary_data")
 
-        productData["numTotalVulnerabilities"] += projectData[project]["numTotalVulnerabilities"]
+    applicationSummaryData = {}
 
-        productData["numCriticalVulnerabilities"] += projectData[project]["numCriticalVulnerabilities"]
-        productData["projectData"]["numCriticalVulnerabilities"].append(projectData[project]["numCriticalVulnerabilities"])
+    # For each metric sum the data up
+    for metric in projectSummaryData:
+        if metric != "projectNames":
+            applicationSummaryData[metric] = sum(projectSummaryData[metric])
 
-        productData["numHighVulnerabilities"] += projectData[project]["numHighVulnerabilities"]
-        productData["projectData"]["numHighVulnerabilities"].append(projectData[project]["numHighVulnerabilities"])
-
-        productData["numMediumVulnerabilities"] += projectData[project]["numMediumVulnerabilities"]
-        productData["projectData"]["numMediumVulnerabilities"].append(projectData[project]["numMediumVulnerabilities"])
-
-        productData["numLowVulnerabilities"] += projectData[project]["numLowVulnerabilities"]
-        productData["projectData"]["numLowVulnerabilities"].append(projectData[project]["numLowVulnerabilities"])
-
-        productData["numNoneVulnerabilities"] += projectData[project]["numNoneVulnerabilities"]
-        productData["projectData"]["numNoneVulnerabilities"].append(projectData[project]["numNoneVulnerabilities"])
-   
+    logger.debug("Exiting get_application_summary_data")
+    return applicationSummaryData
 
 
-    return productData
+
+
     
