@@ -9,9 +9,6 @@ File : report_data.py
 '''
 
 import logging
-import json
-from anytree.importer import DictImporter
-from anytree import RenderTree, AsciiStyle
 
 import CodeInsight_RESTAPIs.project.get_child_projects
 import CodeInsight_RESTAPIs.project.get_project_inventory
@@ -22,20 +19,30 @@ logger = logging.getLogger(__name__)
 def gather_data_for_report(baseURL, projectID, authToken, reportName):
     logger.info("Entering gather_data_for_report")
 
+    projectList = [] # List to hold parent/child details for report
     inventoryData = {}  # Create a dictionary containing the inventory data using inventoryID as keys
     projectData = {} # Create a dictionary containing the project level summary data using projectID as keys
 
     # Get the list of parent/child projects start at the base project
     projectHierarchy = CodeInsight_RESTAPIs.project.get_child_projects.get_child_projects_recursively(baseURL, projectID, authToken)
 
-    # Create a list of the projects the correct display order with name, ID and indentation
-    projectOrder = get_project_order(projectHierarchy, baseURL)
+    # Create a list of project data sorted by the project name at each level for report display  
+    # Add details for the parent node
+    nodeDetails = {}
+    nodeDetails["id"] = projectHierarchy["id"]
+    nodeDetails["parent"] = "#"  # The root node
+    nodeDetails["text"] = projectHierarchy["name"]
+
+    projectList.append(nodeDetails)
+
+    projectList = create_project_hierarchy(projectHierarchy, projectHierarchy["id"], projectList)
+
     
     #  Gather the details for each project and summerize the data
-    for project in projectOrder:
+    for project in projectList:
 
-        projectID = project["projectID"]
-        projectName = project["projectName"]
+        projectID = project["id"]
+        projectName = project["text"]
         projectLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory"
 
         # Get details for  project
@@ -181,7 +188,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
     reportData = {}
     reportData["reportName"] = reportName
     reportData["inventoryData"] = inventoryData
-    reportData["projectOrder"] =projectOrder
+    #reportData["projectHierarchy"] = projectHierarchy
+    reportData["projectList"] =projectList
     reportData["projectSummaryData"] = projectSummaryData
     reportData["applicationSummaryData"] = applicationSummaryData
 
@@ -229,37 +237,27 @@ def get_vulnerability_summary(vulnerabilities):
 
     return vulnerabilityData
 
-#----------------------------------------------------------------------
-def get_project_order(projectHierarchy, baseURL):
-    logger.debug("Entering get_project_order")
+#----------------------------------------------#
+def create_project_hierarchy(project, parentID, projectList):
+    logger.debug("Entering create_project_hierarchy")
 
-    importer = DictImporter()
+    # Are there more child projects for this project?
+    if len(project["childProject"]):
 
-    # Clean up the hierchy dict for use for importer
-    updatedprojectHierarchy = json.loads(json.dumps(projectHierarchy).replace('"childProject":', '"children":'))
-    root = importer.import_(updatedprojectHierarchy)
+        # Sort by project name of child projects
+        for childProject in sorted(project["childProject"], key = lambda i: i['name'] ) :
 
-    # Create list for the projects in the correct order
-    projectOrder = []
+            nodeDetails = {}
+            nodeDetails["id"] = childProject["id"]
+            nodeDetails["parent"] = parentID
+            nodeDetails["text"] = childProject["name"]
 
-    for row in RenderTree(root, style=AsciiStyle(), childiter=project_sort):
+            projectList.append( nodeDetails )
 
-        # For output purposes create a dict that contains the project name, id, indentation and link
-        projectDetails = {}
-        projectDetails["projectName"] = row.node.name
-        projectDetails["projectID"] = row.node.id
-        projectDetails["indentation"] = (len(row.pre))
-        projectDetails["projectLink"] = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectDetails["projectID"]) + "&tab=projectInventory"
+            create_project_hierarchy(childProject, childProject["id"], projectList)
 
-        projectOrder.append(projectDetails)
+    return projectList
 
-        # Build up the 
-
-    return projectOrder
-
-#----------------------------------------------------------------------------------------#
-def project_sort(projects):
-    return sorted(projects, key=lambda projects: projects.name)
 
 #----------------------------------------------------------------------------------------#
 def get_project_summary_data(projectData):

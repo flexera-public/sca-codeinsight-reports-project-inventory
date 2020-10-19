@@ -39,7 +39,7 @@ def generate_html_report(reportData):
 
     reportName = reportData["reportName"]
     inventoryData = reportData["inventoryData"]
-    projectOrder = reportData["projectOrder"]
+    projectList = reportData["projectList"]
     projectSummaryData = reportData["projectSummaryData"]
     applicationSummaryData = reportData["applicationSummaryData"]
    
@@ -92,6 +92,7 @@ def generate_html_report(reportData):
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.1/css/bootstrap.min.css" integrity="sha384-VCmXjywReHh4PwowAiWNagnWcLhlEJLA5buUprzK8rxFgeH0kww/aWY76TfkUoSX" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
         <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css">
     ''')
 
 
@@ -108,12 +109,6 @@ def generate_html_report(reportData):
         logger.error("Unable to open %s" %cssFile)
         print("Unable to open %s" %cssFile)
 
-    html_ptr.write('''
-        pre {
-            display: inline;
-            margin: 0;  
-           }
-    ''')     
 
     html_ptr.write("        </style>\n")  
 
@@ -167,7 +162,7 @@ def generate_html_report(reportData):
     html_ptr.write("</div>\n")
  
     # If there is some sort of hierarchy then show specific project summeries
-    if len(projectOrder) > 1:
+    if len(projectList) > 1:
 
         html_ptr.write("<hr class='small'>\n")
 
@@ -187,8 +182,8 @@ def generate_html_report(reportData):
         html_ptr.write("    <div class='row'>\n")
 
         html_ptr.write("        <div class='col-sm'>\n")
-
-        display_simple_project_hierarchy(html_ptr, projectOrder)
+        html_ptr.write("<h6 class='gray' style='padding-top: 10px;'><center>Project Hierarchy</center></h6>") 
+        html_ptr.write("            <div id='project_hierarchy'></div>\n")
         
         html_ptr.write("        </div>\n")
         html_ptr.write("        <div class='col-sm'>\n")
@@ -337,30 +332,26 @@ def generate_html_report(reportData):
     html_ptr.write('''
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>  
     <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.10/jstree.min.js"></script>
  
     ''')
 
-
     html_ptr.write("<script>\n")
-    # Add the js for inventory datatable
-    html_ptr.write('''
-        
-            var table = $('#inventoryData').DataTable();
-
-            $(document).ready(function() {
-                table;
-            } );
-    ''')
-
+    
+    # Logic for datatable for inventory details
+    add_inventory_datatable(html_ptr)
     # Add the common chartjs config
     add_default_chart_options(html_ptr)
     # Add the js for the application summary stacked bar charts
     generate_application_summary_chart(html_ptr, applicationSummaryData)
 
-    if len(projectOrder) > 1:
+    if len(projectList) > 1:
+        # Add the js for the project summary stacked bar charts
+        generate_project_hierarchy_tree(html_ptr, projectList)
         # Add the js for the project summary stacked bar charts
         generate_project_summary_charts(html_ptr, projectSummaryData)
     
@@ -388,25 +379,18 @@ def encodeImage(imageFile):
         logger.error("Unable to open %s" %imageFile)
         raise
 
+
 #----------------------------------------------------------------------------------------#
+def add_inventory_datatable(html_ptr):
+    # Add the js for inventory datatable
+    html_ptr.write('''
+        
+            var table = $('#inventoryData').DataTable();
 
-def display_simple_project_hierarchy(html_ptr, projectOrder):
-    logger.debug("Entering display_simple_project_hierarchy")
-
-    html_ptr.write("<h6 class='gray' style='padding-top: 10px;'><center>Project Hierarchy</center></h6>") 
-
-    
-    for project in projectOrder:
-        projectName = project["projectName"]
-        indentation = project["indentation"]
-        projectLink = project["projectLink"]
-
-        indentation = int(indentation) * "&nbsp"
-        spacing = int(2) * "&nbsp"
-
-        html_ptr.write("%s <hr class='small-gray' style='display:inline-block; width: 15px; vertical-align: middle'><a href='%s' target='_blank'><span class='hierarchy'>%s %s</span></a><br>\n" %(indentation, projectLink, spacing, projectName))
-
-
+            $(document).ready(function() {
+                table;
+            } );
+    ''')
 
 #----------------------------------------------------------------------------------------#
 def add_default_chart_options(html_ptr):
@@ -573,6 +557,29 @@ def generate_application_summary_chart(html_ptr, applicationSummaryData):
     applicationReviewStatusChart.options.tooltips.titleFontSize = 0
     
     ''' %(applicationSummaryData["numApproved"], applicationSummaryData["numRejected"], applicationSummaryData["numDraft"]) )
+
+#----------------------------------------------------------------------------------------#
+def generate_project_hierarchy_tree(html_ptr, projectHierarchy):
+    logger.info("Entering generate_project_hierarchy_tree")
+
+    html_ptr.write('''var hierarchy = [''')
+
+    for project in projectHierarchy:
+        html_ptr.write("%s," %project)
+
+    html_ptr.write(''']''')
+
+    html_ptr.write('''
+
+        $('#project_hierarchy').jstree({ 'core' : {
+            'data' : hierarchy
+        } });
+
+        $('#project_hierarchy').on('ready.jstree', function() {
+            $("#project_hierarchy").jstree("open_all");          
+        });
+
+    ''' )
 
 
 #----------------------------------------------------------------------------------------#
