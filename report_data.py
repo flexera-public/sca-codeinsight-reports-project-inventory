@@ -187,8 +187,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
     # Build up the data to return for the
     reportData = {}
     reportData["reportName"] = reportName
+    reportData["projectName"] = projectHierarchy["name"]
     reportData["inventoryData"] = inventoryData
-    #reportData["projectHierarchy"] = projectHierarchy
     reportData["projectList"] =projectList
     reportData["projectSummaryData"] = projectSummaryData
     reportData["applicationSummaryData"] = applicationSummaryData

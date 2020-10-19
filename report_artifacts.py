@@ -38,6 +38,7 @@ def generate_html_report(reportData):
     logger.info("    Entering generate_html_report")
 
     reportName = reportData["reportName"]
+    projectName = reportData["projectName"] 
     inventoryData = reportData["inventoryData"]
     projectList = reportData["projectList"]
     projectSummaryData = reportData["projectSummaryData"]
@@ -142,7 +143,10 @@ def generate_html_report(reportData):
     html_ptr.write("<table id='applicationSummary' class='table' style='width:90%'>\n")
     html_ptr.write("    <thead>\n")
     html_ptr.write("        <tr>\n")
-    html_ptr.write("            <th colspan='8' class='text-center'><h4>Application Summary</h4></th>\n") 
+    if len(projectList) > 1:
+        html_ptr.write("            <th colspan='8' class='text-center'><h4>Application Summary</h4></th>\n") 
+    else:
+        html_ptr.write("            <th colspan='8' class='text-center'><h4>%s Summary</h4></th>\n" %projectName) 
     html_ptr.write("        </tr>\n") 
     html_ptr.write("    </thead>\n")
     html_ptr.write("</table>\n")
