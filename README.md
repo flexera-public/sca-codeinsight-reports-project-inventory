@@ -1,9 +1,12 @@
 # sca-codeinsight-reports-project-inventory
 
-The sca-codeinsight-reports-project-inventory repository is a example report for Revenera's Code Insight product. This report allows a user to get a quick high level summary of the inventory items within a project
+The sca-codeinsight-reports-project-inventory repository is a example report for Revenera's Code Insight product. This report allows a user to get a quick high level summary of the inventory items within a project.  This report will take into account any child projects (recursively) and roll up the associated inventory information on a project as well as an application basis.
 
-This repository utilizes [Bootstrap](https://getbootstrap.com/) and [DataTables](https://datatables.net/) for the creation of the report file
- 
+This repository utilizes the following via CDN for the creation of the report artifacts.
+- [Bootstrap](https://getbootstrap.com/)
+- [DataTables](https://datatables.net/)
+- [chart.js](https://www.chartjs.org/)
+- [jsTree](https://www.jstree.com/)
 
 
 ## Prerequisites
@@ -11,9 +14,10 @@ This repository utilizes [Bootstrap](https://getbootstrap.com/) and [DataTables]
 
  **Code Insight Release Requirements**
   
-|Repository Tag|Minimum Code Insight Release  |
+|Repository Tag | Minimum Code Insight Release  |
 |--|--|
 |1.0.x |2020R3  |
+|2.0.x |2020R3  |
 
 
 
@@ -36,11 +40,11 @@ There are two locations that require updates to provide the report scripts detai
 
 The [create_report.sh](create_report.sh) or [create_report.bat](create_report.bat) file contains a **baseURL** value that should be updated to allow for project and inventory links to point to the correct system. 
 
-For registraion purpsoses update the **baseURL** and **adminAuthToken** values within [registration.py](registration.py) to reflect the correct values to allow the report itself to be registerd on the Code Insight server.
+For registration purposes update the **baseURL** and **adminAuthToken** values within [registration.py](registration.py) to reflect the correct values to allow the report itself to be registered on the Code Insight server.
 
 ## Usage
 
-This report is executed directly from within Revenera's Code Insight product. From the summary page of each Code Insight project it is possible to *generate* the **Project Inventory Report** via the Custom Report Framework. Once this report is selected the second project for comparision can be selected
+This report is executed directly from within Revenera's Code Insight product. From the summary page of each Code Insight project it is possible to *generate* the **Project Inventory Report** via the Custom Report Framework. Once this report is selected the second project for comparison can be selected
 
 The Code Insight Custom Report Framework will provide the following to the custom report when initiated:
 
@@ -79,3 +83,5 @@ To unregister this report:
 ## License
 
 [MIT](LICENSE.TXT)
+
+
