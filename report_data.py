@@ -29,21 +29,23 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
     # Create a list of project data sorted by the project name at each level for report display  
     # Add details for the parent node
     nodeDetails = {}
-    nodeDetails["id"] = projectHierarchy["id"]
     nodeDetails["parent"] = "#"  # The root node
-    nodeDetails["text"] = projectHierarchy["name"]
+    nodeDetails["projectName"] = projectHierarchy["name"]
+    nodeDetails["projectID"] = projectHierarchy["id"]
+    nodeDetails["projectLink"] = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectHierarchy["id"]) + "&tab=projectInventory"
 
     projectList.append(nodeDetails)
 
-    projectList = create_project_hierarchy(projectHierarchy, projectHierarchy["id"], projectList)
+    projectList = create_project_hierarchy(projectHierarchy, projectHierarchy["id"], projectList, baseURL)
 
     
     #  Gather the details for each project and summerize the data
     for project in projectList:
 
-        projectID = project["id"]
-        projectName = project["text"]
-        projectLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory"
+        projectID = project["projectID"]
+        projectName = project["projectName"]
+        projectLink = project["projectLink"]
+
 
         # Get details for  project
         try:
@@ -238,7 +240,7 @@ def get_vulnerability_summary(vulnerabilities):
     return vulnerabilityData
 
 #----------------------------------------------#
-def create_project_hierarchy(project, parentID, projectList):
+def create_project_hierarchy(project, parentID, projectList, baseURL):
     logger.debug("Entering create_project_hierarchy")
 
     # Are there more child projects for this project?
@@ -248,13 +250,14 @@ def create_project_hierarchy(project, parentID, projectList):
         for childProject in sorted(project["childProject"], key = lambda i: i['name'] ) :
 
             nodeDetails = {}
-            nodeDetails["id"] = childProject["id"]
+            nodeDetails["projectID"] = childProject["id"]
             nodeDetails["parent"] = parentID
-            nodeDetails["text"] = childProject["name"]
+            nodeDetails["projectName"] = childProject["name"]
+            nodeDetails["projectLink"] = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(childProject["id"]) + "&tab=projectInventory"
 
             projectList.append( nodeDetails )
 
-            create_project_hierarchy(childProject, childProject["id"], projectList)
+            create_project_hierarchy(childProject, childProject["id"], projectList, baseURL)
 
     return projectList
 

@@ -566,12 +566,20 @@ def generate_application_summary_chart(html_ptr, applicationSummaryData):
 def generate_project_hierarchy_tree(html_ptr, projectHierarchy):
     logger.info("Entering generate_project_hierarchy_tree")
 
-    html_ptr.write('''var hierarchy = [''')
+    html_ptr.write('''var hierarchy = [\n''')
 
     for project in projectHierarchy:
-        html_ptr.write("%s," %project)
 
-    html_ptr.write(''']''')
+        html_ptr.write('''{
+            'id': '%s', 
+            'parent': '%s', 
+            'text': '%s',
+            'a_attr': {
+                'href': '%s'
+            }
+        },\n'''  %(project["projectID"], project["parent"], project["projectName"], project["projectLink"]))
+
+    html_ptr.write('''\n]''')
 
     html_ptr.write('''
 
@@ -580,7 +588,15 @@ def generate_project_hierarchy_tree(html_ptr, projectHierarchy):
         } });
 
         $('#project_hierarchy').on('ready.jstree', function() {
-            $("#project_hierarchy").jstree("open_all");          
+            $("#project_hierarchy").jstree("open_all");               
+
+        $("#project_hierarchy").on("click", ".jstree-anchor", function(evt)
+        {
+            var link = $(evt.target).attr("href");
+            window.open(link, '_blank');
+        });
+
+
         });
 
     ''' )
