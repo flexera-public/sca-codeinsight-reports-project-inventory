@@ -213,8 +213,9 @@ def generate_html_report(reportData):
     html_ptr.write("        <tr>\n")
     html_ptr.write("            <th colspan='8' class='text-center'><h4>Inventory Items</h4></th>\n") 
     html_ptr.write("        </tr>\n") 
-    html_ptr.write("        <tr>\n") 
-    html_ptr.write("            <th style='width: 15%' class='text-center'>PROJECT</th>\n") 
+    html_ptr.write("        <tr>\n")
+    if len(projectList) > 1: 
+        html_ptr.write("            <th style='width: 15%' class='text-center'>PROJECT</th>\n") 
     html_ptr.write("            <th style='width: 25%' class='text-center text-nowrap'>INVENTORY ITEM</th>\n") 
     html_ptr.write("            <th style='width: 10%' class='text-center'>PRIORITY</th>\n") 
     html_ptr.write("            <th style='width: 15%' class='text-center'>COMPONENT</th>\n")
@@ -266,8 +267,8 @@ def generate_html_report(reportData):
             logger.debug("    No vulnerability data")
 
         html_ptr.write("        <tr> \n")
-
-        html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(projectLink, projectName))
+        if len(projectList) > 1:
+            html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(projectLink, projectName))
         html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(inventoryLink, inventoryItemName))
  
 
