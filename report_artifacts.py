@@ -167,6 +167,16 @@ def generate_html_report(reportData):
  
     # If there is some sort of hierarchy then show specific project summeries
     if len(projectList) > 1:
+        
+        # How much space to we need to give each canvas
+        # based on the amount of projects in the hierarchy
+        canvasHeight = len(projectList) * 20   
+
+        # We need a minimum size to cover font as well
+        if canvasHeight < 180:
+            canvasHeight = 180
+        # The entire column needs to hold the three canvas items
+        columnHeight = canvasHeight *3
 
         html_ptr.write("<hr class='small'>\n")
 
@@ -190,14 +200,14 @@ def generate_html_report(reportData):
         html_ptr.write("            <div id='project_hierarchy'></div>\n")
         
         html_ptr.write("        </div>\n")
-        html_ptr.write("        <div class='col-sm'>\n")
-        html_ptr.write("            <div class='col-sm'>\n")
+        html_ptr.write("        <div class='col-sm' style='height: %spx;'>\n" %(columnHeight) )
+        html_ptr.write("            <div class='col-sm' style='height: %spx'>\n"%(canvasHeight))
         html_ptr.write("                <canvas id='projectLicenses'></canvas>\n")
         html_ptr.write("            </div>\n")
-        html_ptr.write("            <div class='col-sm'>\n")
+        html_ptr.write("            <div class='col-sm' style='height: %spx'>\n"%(canvasHeight))
         html_ptr.write("               <canvas id='projectVulnerabilities'></canvas>\n")
         html_ptr.write("             </div>\n")
-        html_ptr.write("            <div class='col-sm'>\n")
+        html_ptr.write("            <div class='col-sm' style='height: %spx'>\n"%(canvasHeight))
         html_ptr.write("               <canvas id='projectReviewStatus'></canvas>\n")
         html_ptr.write("           </div>\n")
         html_ptr.write("        </div>\n")
