@@ -27,10 +27,13 @@ if sys.version_info <= (3, 5):
 else:
     pass
 
+logfileName = os.path.dirname(os.path.realpath(__file__)) + "/_project_inventory_report.log"
+
 ###################################################################################
 #  Set up logging handler to allow for different levels of logging to be capture
-logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', datefmt='%Y-%m-%d:%H:%M:%S', filename="_project_inventory_report.log", filemode='w',level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', datefmt='%Y-%m-%d:%H:%M:%S', filename=logfileName, filemode='w',level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
 
 ####################################################################################
 # Create command line argument options
