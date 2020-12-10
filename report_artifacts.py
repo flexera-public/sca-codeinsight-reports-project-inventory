@@ -489,6 +489,11 @@ def generate_application_summary_chart(html_ptr, applicationSummaryData):
                     label: 'Permissive/Public Domain',
                     data: [%s],
                     backgroundColor: "#008000"
+                },{
+                    // Unknown Licenses
+                    label: 'Unknown',
+                    data: [%s],
+                    backgroundColor: "#D3D3D3"
                 }]
             },
 
@@ -497,7 +502,7 @@ def generate_application_summary_chart(html_ptr, applicationSummaryData):
         applicationLicensesChart.options.title.text = "License Summary"
         applicationLicensesChart.options.tooltips.titleFontSize = 0
 
-        ''' %(applicationSummaryData["numP1Licenses"], applicationSummaryData["numP2Licenses"], applicationSummaryData["numP3Licenses"])  )
+        ''' %(applicationSummaryData["numP1Licenses"], applicationSummaryData["numP2Licenses"], applicationSummaryData["numP3Licenses"], applicationSummaryData["numNALicenses"])  )
 
    
     html_ptr.write(''' 
@@ -639,6 +644,11 @@ def generate_project_summary_charts(html_ptr, projectSummaryData):
                     label: 'Permissive/Public Domain',
                     data: %s,
                     backgroundColor: "#008000"
+                },{
+                    // Unknown Licenses
+                    label: 'Unknown',
+                    data: %s,
+                    backgroundColor: "#D3D3D3"
                 }]
             },
 
@@ -646,7 +656,7 @@ def generate_project_summary_charts(html_ptr, projectSummaryData):
         });
         projectLicensesChart.options.title.text = "License Summary"
 
-        ''' %(projectSummaryData["projectNames"], projectSummaryData["numP1Licenses"], projectSummaryData["numP2Licenses"], projectSummaryData["numP3Licenses"])  )
+        ''' %(projectSummaryData["projectNames"], projectSummaryData["numP1Licenses"], projectSummaryData["numP2Licenses"], projectSummaryData["numP3Licenses"],  projectSummaryData["numNALicenses"])  )
 
     html_ptr.write(''' 
     
