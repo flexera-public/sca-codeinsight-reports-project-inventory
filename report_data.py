@@ -39,7 +39,6 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
 
     projectList = create_project_hierarchy(projectHierarchy, projectHierarchy["id"], projectList, baseURL)
 
-    
     #  Gather the details for each project and summerize the data
     for project in projectList:
 
@@ -71,12 +70,6 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
         numApproved = 0
         numRejected = 0
         numDraft = 0
-        numTotalVulnerabilities = 0
-        numCriticalVulnerabilities = 0
-        numHighVulnerabilities = 0
-        numMediumVulnerabilities = 0
-        numLowVulnerabilities = 0
-        numNoneVulnerabilities = 0
 
         inventoryItems = projectInventoryResponse["inventoryItems"]
         currentItem=0
@@ -138,14 +131,6 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
             else:
                 logger.error("Unknown inventoryReview Status: %s" %inventoryReviewStatus)
 
-            if vulnerabilityData != "":
-                numTotalVulnerabilities += vulnerabilityData["numTotalVulnerabilities"]  # Used to determine if there are any vuln at all for display purposes
-                numCriticalVulnerabilities += vulnerabilityData["numCriticalVulnerabilities"]
-                numHighVulnerabilities += vulnerabilityData["numHighVulnerabilities"]
-                numMediumVulnerabilities += vulnerabilityData["numMediumVulnerabilities"]
-                numLowVulnerabilities += vulnerabilityData["numLowVulnerabilities"]
-                numNoneVulnerabilities += vulnerabilityData["numNoneVulnerabilities"]
-
         # Group all inventory based data into a dict wit the project name as the key
         projectData[projectName]["numApproved"] = numApproved
         projectData[projectName]["numRejected"] = numRejected
@@ -154,12 +139,11 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
         projectData[projectName]["numP2Licenses"] = projectInformation["licenses"]["P2"]
         projectData[projectName]["numP3Licenses"] = projectInformation["licenses"]["P3"]
         projectData[projectName]["numNALicenses"] = projectInformation["licenses"]["Unknown"]
-        projectData[projectName]["numTotalVulnerabilities"] = numTotalVulnerabilities
-        projectData[projectName]["numCriticalVulnerabilities"] = numCriticalVulnerabilities
-        projectData[projectName]["numHighVulnerabilities"] = numHighVulnerabilities
-        projectData[projectName]["numMediumVulnerabilities"] = numMediumVulnerabilities
-        projectData[projectName]["numLowVulnerabilities"] = numLowVulnerabilities
-        projectData[projectName]["numNoneVulnerabilities"] = numNoneVulnerabilities
+        projectData[projectName]["numCriticalVulnerabilities"] = projectInformation["vulnerabilities"]["CVSS3.0"]["Critical"]
+        projectData[projectName]["numHighVulnerabilities"] = projectInformation["vulnerabilities"]["CVSS3.0"]["High"]
+        projectData[projectName]["numMediumVulnerabilities"] = projectInformation["vulnerabilities"]["CVSS3.0"]["Medium"]
+        projectData[projectName]["numLowVulnerabilities"] = projectInformation["vulnerabilities"]["CVSS3.0"]["Low"]
+        projectData[projectName]["numNoneVulnerabilities"] = projectInformation["vulnerabilities"]["CVSS3.0"]["None"]
         projectData[projectName]["projectLink"] = projectLink
 
     # Roll up the inventortory data at a project level for display charts
