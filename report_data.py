@@ -46,7 +46,6 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
         projectName = project["projectName"]
         projectLink = project["projectLink"]
 
-
         # Get details for  project
         try:
             projectInventoryResponse = CodeInsight_RESTAPIs.project.get_project_inventory.get_project_inventory_details(baseURL, projectID, authToken)
@@ -60,7 +59,6 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
 
         #############################################
         #  This area will be replaced by 2020R4 APIs
-        P1InventoryItems = 0
         numApproved = 0
         numRejected = 0
         numDraft = 0
@@ -75,9 +73,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
         numLowVulnerabilities = 0
         numNoneVulnerabilities = 0
 
-        projectName = projectInventoryResponse["projectName"]
         inventoryItems = projectInventoryResponse["inventoryItems"]
-        totalNumberIventory = len(inventoryItems)
         currentItem=0
 
         for inventoryItem in inventoryItems:
@@ -96,12 +92,12 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
             inventoryReviewStatus = inventoryItem["inventoryReviewStatus"]          
             inventoryLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory&pinv=" + str(inventoryID)
             
-            logger.debug("Processing iventory items %s of %s" %(currentItem, totalNumberIventory))
+            logger.debug("Processing inventory items %s of %s" %(currentItem, len(inventoryItems)))
             logger.debug("    %s" %(inventoryItemName))
             
             try:
                 vulnerabilities = inventoryItem["vulnerabilities"]
-                vulnerabilityData = get_vulnerability_summary(vulnerabilities)
+                vulnerabilityData = create_inventory_summary_dict(vulnerabilities)
             except:
                 logger.debug("No vulnerabilies for %s - %s" %(componentName, componentVersionName))
                 vulnerabilityData = ""
@@ -128,7 +124,6 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
 
             #############################################
             # Sum up inventory review status data
-
             if inventoryReviewStatus == "Approved":
                 numApproved += 1
             elif inventoryReviewStatus == "Rejected":
@@ -139,11 +134,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
                 logger.error("Unknown inventoryReview Status: %s" %inventoryReviewStatus)
 
 
-
             #############################################
             #  This area will be replaced by 2020R4 APIs
-            if inventoryPriority == "High":  # this is P1 inventory item
-                P1InventoryItems +=1
 
             if selectedLicensePriority == 1:
                 numP1Licenses += 1
@@ -157,14 +149,14 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
                 logger.error("Unknown license priority: %s" %selectedLicensePriority)
 
             if vulnerabilityData != "":
-                numTotalVulnerabilities += vulnerabilityData["numTotalVulnerabilities"]
+                numTotalVulnerabilities += vulnerabilityData["numTotalVulnerabilities"]  # Used to determine if there are any vuln at all for display purposes
                 numCriticalVulnerabilities += vulnerabilityData["numCriticalVulnerabilities"]
                 numHighVulnerabilities += vulnerabilityData["numHighVulnerabilities"]
                 numMediumVulnerabilities += vulnerabilityData["numMediumVulnerabilities"]
                 numLowVulnerabilities += vulnerabilityData["numLowVulnerabilities"]
                 numNoneVulnerabilities += vulnerabilityData["numNoneVulnerabilities"]
 
-        projectData[projectName]["P1InventoryItems"] = P1InventoryItems
+        # Group all inventory based data into a dict wit the project name as the key
         projectData[projectName]["numApproved"] = numApproved
         projectData[projectName]["numRejected"] = numRejected
         projectData[projectName]["numDraft"] = numDraft
@@ -180,11 +172,11 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
         projectData[projectName]["numNoneVulnerabilities"] = numNoneVulnerabilities
         projectData[projectName]["projectLink"] = projectLink
 
-    # Take the project data and create the lists needed for the chart data
-    projectSummaryData = get_project_summary_data(projectData)
+    # Roll up the inventortory data at a project level for display charts
+    projectSummaryData = create_project_summary_data_dict(projectData)
 
-    # Roll up the individual project info to the application level
-    applicationSummaryData = get_application_summary_data(projectSummaryData)
+    # Roll up the individual project data to the application level
+    applicationSummaryData = create_application_summary_data_dict(projectSummaryData)
 
     # Build up the data to return for the
     reportData = {}
@@ -201,7 +193,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
     return reportData
   
 #----------------------------------------------------------------------
-def get_vulnerability_summary(vulnerabilities):
+def create_inventory_summary_dict(vulnerabilities):
     logger.info("Entering get_vulnerability_summary")
 
     numCriticalVulnerabilities = 0
@@ -263,7 +255,7 @@ def create_project_hierarchy(project, parentID, projectList, baseURL):
 
 
 #----------------------------------------------------------------------------------------#
-def get_project_summary_data(projectData):
+def create_project_summary_data_dict(projectData):
     logger.debug("Entering get_project_summary_data")
 
    # For the chart data we need to create lists where each element is in the correct order based on the 
@@ -288,7 +280,7 @@ def get_project_summary_data(projectData):
     return projectSummaryData
     
 #----------------------------------------------------------------------------------------#
-def get_application_summary_data(projectSummaryData):
+def create_application_summary_data_dict(projectSummaryData):
     logger.debug("Entering get_application_summary_data")
 
     applicationSummaryData = {}
