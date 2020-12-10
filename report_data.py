@@ -12,6 +12,7 @@ import logging
 
 import CodeInsight_RESTAPIs.project.get_child_projects
 import CodeInsight_RESTAPIs.project.get_project_inventory
+import CodeInsight_RESTAPIs.project.get_project_information
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,14 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
         projectName = project["projectName"]
         projectLink = project["projectLink"]
 
+        # Get project information with rollup summary data
+        try:
+            projectInformation = CodeInsight_RESTAPIs.project.get_project_information.get_project_information_summary(baseURL, projectID, authToken)
+        except:
+            logger.error("    No Project Information Returned!")
+            print("No Project Information Returned.")
+            return -1
+
         # Get details for  project
         try:
             projectInventoryResponse = CodeInsight_RESTAPIs.project.get_project_inventory.get_project_inventory_details(baseURL, projectID, authToken)
@@ -62,10 +71,6 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
         numApproved = 0
         numRejected = 0
         numDraft = 0
-        numP1Licenses = 0
-        numP2Licenses = 0
-        numP3Licenses = 0
-        numNALicenses = 0
         numTotalVulnerabilities = 0
         numCriticalVulnerabilities = 0
         numHighVulnerabilities = 0
@@ -133,21 +138,6 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
             else:
                 logger.error("Unknown inventoryReview Status: %s" %inventoryReviewStatus)
 
-
-            #############################################
-            #  This area will be replaced by 2020R4 APIs
-
-            if selectedLicensePriority == 1:
-                numP1Licenses += 1
-            elif selectedLicensePriority == 2:
-                numP2Licenses += 1
-            elif selectedLicensePriority == 3:
-                numP3Licenses += 1
-            elif selectedLicensePriority == "N/A":
-                numNALicenses += 1
-            else:
-                logger.error("Unknown license priority: %s" %selectedLicensePriority)
-
             if vulnerabilityData != "":
                 numTotalVulnerabilities += vulnerabilityData["numTotalVulnerabilities"]  # Used to determine if there are any vuln at all for display purposes
                 numCriticalVulnerabilities += vulnerabilityData["numCriticalVulnerabilities"]
@@ -160,10 +150,10 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
         projectData[projectName]["numApproved"] = numApproved
         projectData[projectName]["numRejected"] = numRejected
         projectData[projectName]["numDraft"] = numDraft
-        projectData[projectName]["numP1Licenses"] = numP1Licenses
-        projectData[projectName]["numP2Licenses"] = numP2Licenses
-        projectData[projectName]["numP3Licenses"] = numP3Licenses
-        projectData[projectName]["numNALicenses"] = numNALicenses
+        projectData[projectName]["numP1Licenses"] = projectInformation["licenses"]["P1"]
+        projectData[projectName]["numP2Licenses"] = projectInformation["licenses"]["P2"]
+        projectData[projectName]["numP3Licenses"] = projectInformation["licenses"]["P3"]
+        projectData[projectName]["numNALicenses"] = projectInformation["licenses"]["Unknown"]
         projectData[projectName]["numTotalVulnerabilities"] = numTotalVulnerabilities
         projectData[projectName]["numCriticalVulnerabilities"] = numCriticalVulnerabilities
         projectData[projectName]["numHighVulnerabilities"] = numHighVulnerabilities
