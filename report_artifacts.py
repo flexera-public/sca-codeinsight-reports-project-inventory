@@ -243,13 +243,11 @@ def generate_html_report(reportData):
     # table with the results
     for inventoryID in sorted(inventoryData):
         projectName = inventoryData[inventoryID]["projectName"]
-        projectID = inventoryData[inventoryID]["projectID"]
         inventoryItemName = inventoryData[inventoryID]["inventoryItemName"]
         componentName = inventoryData[inventoryID]["componentName"]
         componentVersionName = inventoryData[inventoryID]["componentVersionName"]
         inventoryPriority = inventoryData[inventoryID]["inventoryPriority"]
         selectedLicenseName = inventoryData[inventoryID]["selectedLicenseName"]
-        selectedLicensePriority = inventoryData[inventoryID]["selectedLicensePriority"]
         vulnerabilityData = inventoryData[inventoryID]["vulnerabilityData"]
         componentUrl = inventoryData[inventoryID]["componentUrl"]
         selectedLicenseUrl = inventoryData[inventoryID]["selectedLicenseUrl"]
