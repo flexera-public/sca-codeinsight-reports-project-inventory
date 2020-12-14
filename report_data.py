@@ -13,6 +13,7 @@ import logging
 import CodeInsight_RESTAPIs.project.get_child_projects
 import CodeInsight_RESTAPIs.project.get_project_inventory
 import CodeInsight_RESTAPIs.project.get_project_information
+import CodeInsight_RESTAPIs.project.get_inventory_summary
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,14 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
             print("No Project Information Returned.")
             return -1
 
+        # Get project summary information with v3 vulnerability roll up at inventory level
+        try:
+            projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v3_summary(baseURL, projectID, authToken)
+        except:
+            logger.error("    No Project Information Returned!")
+            print("No Project Information Returned.")
+            return -1
+
         # Get details for  project
         try:
             projectInventoryResponse = CodeInsight_RESTAPIs.project.get_project_inventory.get_project_inventory_details(baseURL, projectID, authToken)
@@ -61,6 +70,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
             logger.error("    No project ineventory response!")
             print("No project inventory response.")
             return -1
+
+
 
         # Create empty dictionary for project level data for this project
         projectData[projectName] = {}
@@ -74,44 +85,45 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
         inventoryItems = projectInventoryResponse["inventoryItems"]
         currentItem=0
 
-        for inventoryItem in inventoryItems:
+        for inventoryItem in projectInventorySummary:
             currentItem +=1
 
             inventoryItemName = inventoryItem["name"]
             componentName = inventoryItem["componentName"]
             inventoryPriority = inventoryItem["priority"]
             componentVersionName = inventoryItem["componentVersionName"]
-            selectedLicenseName = inventoryItem["selectedLicenseName"]
+            selectedLicenseID = inventoryItem["selectedLicenseId"]
             selectedLicenseSPDXIdentifier = inventoryItem["selectedLicenseSPDXIdentifier"]
-            selectedLicensePriority = inventoryItem["selectedLicensePriority"]
-            componentUrl = inventoryItem["componentUrl"]
-            selectedLicenseUrl = inventoryItem["selectedLicenseUrl"]
+            selectedLicenseUrl = "www.revenera.com"  # Retreive from license API
+            componentUrl = inventoryItem["url"]
+            
             inventoryID = inventoryItem["id"]
-            inventoryReviewStatus = inventoryItem["inventoryReviewStatus"]          
+            inventoryReviewStatus = inventoryItem["reviewStatus"]          
             inventoryLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory&pinv=" + str(inventoryID)
             
             logger.debug("Processing inventory items %s of %s" %(currentItem, len(inventoryItems)))
             logger.debug("    %s" %(inventoryItemName))
             
             try:
-                vulnerabilities = inventoryItem["vulnerabilities"]
+                vulnerabilities = inventoryItem["vulnerabilitySummary"][0]["CVSS3.0"]
                 vulnerabilityData = create_inventory_summary_dict(vulnerabilities)
             except:
                 logger.debug("No vulnerabilies for %s - %s" %(componentName, componentVersionName))
                 vulnerabilityData = ""
 
-            if selectedLicenseSPDXIdentifier != "":
+            # If there is a SPDX value use that otherwise use the full name based on the             
+            if selectedLicenseSPDXIdentifier == "":
+                selectedLicenseName = selectedLicenseID
+            else:
                 selectedLicenseName = selectedLicenseSPDXIdentifier
 
             inventoryData[inventoryID] = {
                 "projectName" : projectName,
-                "projectID" : projectID,
                 "inventoryItemName" : inventoryItemName,
                 "componentName" : componentName,
                 "componentVersionName" : componentVersionName,
                 "selectedLicenseName" : selectedLicenseName,
                 "vulnerabilityData" : vulnerabilityData,
-                "selectedLicensePriority" : selectedLicensePriority,
                 "inventoryPriority" : inventoryPriority,
                 "componentUrl" : componentUrl,
                 "selectedLicenseUrl" : selectedLicenseUrl,
@@ -168,40 +180,15 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
   
 #----------------------------------------------------------------------
 def create_inventory_summary_dict(vulnerabilities):
-    logger.info("Entering get_vulnerability_summary")
-
-    numCriticalVulnerabilities = 0
-    numHighVulnerabilities = 0
-    numMediumVulnerabilities = 0
-    numLowVulnerabilities = 0
-    numNoneVulnerabilities = 0
+    logger.info("Entering create_inventory_summary_dict")
+    
     vulnerabilityData = {}
-
-    numTotalVulnerabilities = len(vulnerabilities)
-
-    for vulnerability in vulnerabilities:
-
-        vulnerabilityCvssV3Severity = vulnerability["vulnerabilityCvssV3Severity"]
-
-        if vulnerabilityCvssV3Severity == "CRITICAL":
-            numCriticalVulnerabilities +=1
-        elif vulnerabilityCvssV3Severity == "HIGH":
-            numHighVulnerabilities +=1
-        elif vulnerabilityCvssV3Severity == "MEDIUM":
-            numMediumVulnerabilities +=1
-        elif vulnerabilityCvssV3Severity == "LOW":
-            numLowVulnerabilities +=1
-        elif vulnerabilityCvssV3Severity == "N/A" or vulnerabilityCvssV3Severity == "NONE":
-            numNoneVulnerabilities +=1       
-        else:
-            logger.error("Unknown vulnerability severity: %s" %vulnerabilityCvssV3Severity)
-
-    vulnerabilityData["numTotalVulnerabilities"] = numTotalVulnerabilities
-    vulnerabilityData["numCriticalVulnerabilities"] = numCriticalVulnerabilities
-    vulnerabilityData["numHighVulnerabilities"] = numHighVulnerabilities
-    vulnerabilityData["numMediumVulnerabilities"] = numMediumVulnerabilities
-    vulnerabilityData["numLowVulnerabilities"] = numLowVulnerabilities
-    vulnerabilityData["numNoneVulnerabilities"] = numNoneVulnerabilities
+    vulnerabilityData["numTotalVulnerabilities"] = sum(vulnerabilities.values())
+    vulnerabilityData["numCriticalVulnerabilities"] = vulnerabilities["Critical"]
+    vulnerabilityData["numHighVulnerabilities"] = vulnerabilities["High"]
+    vulnerabilityData["numMediumVulnerabilities"] = vulnerabilities["Medium"]
+    vulnerabilityData["numLowVulnerabilities"] = vulnerabilities["Low"]
+    vulnerabilityData["numNoneVulnerabilities"] = vulnerabilities["None"]
 
     return vulnerabilityData
 
