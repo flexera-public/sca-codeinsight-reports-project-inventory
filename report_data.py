@@ -14,6 +14,7 @@ import CodeInsight_RESTAPIs.project.get_child_projects
 import CodeInsight_RESTAPIs.project.get_project_inventory
 import CodeInsight_RESTAPIs.project.get_project_information
 import CodeInsight_RESTAPIs.project.get_inventory_summary
+import CodeInsight_RESTAPIs.license.license_lookup
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
     projectList = [] # List to hold parent/child details for report
     inventoryData = {}  # Create a dictionary containing the inventory data using inventoryID as keys
     projectData = {} # Create a dictionary containing the project level summary data using projectID as keys
+    licenseDetails = {} # Dictionary to store license details to avoid multiple lookups for same id
 
     # Get the list of parent/child projects start at the base project
     projectHierarchy = CodeInsight_RESTAPIs.project.get_child_projects.get_child_projects_recursively(baseURL, projectID, authToken)
@@ -94,12 +96,21 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
             componentVersionName = inventoryItem["componentVersionName"]
             selectedLicenseID = inventoryItem["selectedLicenseId"]
             selectedLicenseSPDXIdentifier = inventoryItem["selectedLicenseSPDXIdentifier"]
-            selectedLicenseUrl = "www.revenera.com"  # Retreive from license API
+
+            if selectedLicenseID in licenseDetails.keys():
+                selectedLicenseUrl = licenseDetails[selectedLicenseID]
+            else:
+                logger.debug("Fetching license details for %s with ID %s" %(selectedLicenseSPDXIdentifier, selectedLicenseID ))
+                selectedLicenseUrl = CodeInsight_RESTAPIs.license.license_lookup.get_license_details(baseURL, selectedLicenseID, authToken)["url"]
+                licenseDetails[selectedLicenseID] = selectedLicenseUrl
+            
             componentUrl = inventoryItem["url"]
             
             inventoryID = inventoryItem["id"]
             inventoryReviewStatus = inventoryItem["reviewStatus"]          
             inventoryLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory&pinv=" + str(inventoryID)
+
+            
             
             logger.debug("Processing inventory items %s of %s" %(currentItem, len(inventoryItems)))
             logger.debug("    %s" %(inventoryItemName))
