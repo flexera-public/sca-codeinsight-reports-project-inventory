@@ -77,7 +77,12 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
         for inventoryItem in projectInventorySummary:
             currentItem +=1
 
+            inventoryID = inventoryItem["id"]
             inventoryItemName = inventoryItem["name"]
+
+            logger.debug("Processing inventory items %s of %s" %(currentItem, len(projectInventorySummary)))
+            logger.debug("    %s - %s" %(inventoryID, inventoryItemName))
+            
             componentName = inventoryItem["componentName"]
             inventoryPriority = inventoryItem["priority"]
             componentVersionName = inventoryItem["componentVersionName"]
@@ -87,20 +92,19 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
             if selectedLicenseID in licenseDetails.keys():
                 selectedLicenseUrl = licenseDetails[selectedLicenseID]
             else:
-                logger.debug("Fetching license details for %s with ID %s" %(selectedLicenseSPDXIdentifier, selectedLicenseID ))
-                selectedLicenseUrl = CodeInsight_RESTAPIs.license.license_lookup.get_license_details(baseURL, selectedLicenseID, authToken)["url"]
-                licenseDetails[selectedLicenseID] = selectedLicenseUrl
+                if selectedLicenseID != "N/A":  
+                    logger.debug("Fetching license details for %s with ID %s" %(selectedLicenseSPDXIdentifier, selectedLicenseID ))
+                    selectedLicenseUrl = CodeInsight_RESTAPIs.license.license_lookup.get_license_details(baseURL, selectedLicenseID, authToken)["url"]
+                    licenseDetails[selectedLicenseID] = selectedLicenseUrl
+                else:
+                    # Typically a WIP item
+                    selectedLicenseUrl = ""
+                    licenseDetails[selectedLicenseID] = selectedLicenseUrl
+                    
             
             componentUrl = inventoryItem["url"]
-            
-            inventoryID = inventoryItem["id"]
             inventoryReviewStatus = inventoryItem["reviewStatus"]          
             inventoryLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory&pinv=" + str(inventoryID)
-
-            
-            
-            logger.debug("Processing inventory items %s of %s" %(currentItem, len(projectInventorySummary)))
-            logger.debug("    %s" %(inventoryItemName))
             
             try:
                 vulnerabilities = inventoryItem["vulnerabilitySummary"][0]["CVSS3.0"]
