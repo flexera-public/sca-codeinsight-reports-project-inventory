@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2020-12-15
+### Added
+- Bumped APIs for 2020R4 support
+- Using roll up APIs from 2020R4
+- Misc cleanup
+
 ## [2.0.0] - 2020-10-20
 ### Added
 - Incorperated child project information
