@@ -11,7 +11,6 @@ File : report_data.py
 import logging
 
 import CodeInsight_RESTAPIs.project.get_child_projects
-import CodeInsight_RESTAPIs.project.get_project_inventory
 import CodeInsight_RESTAPIs.project.get_project_information
 import CodeInsight_RESTAPIs.project.get_inventory_summary
 import CodeInsight_RESTAPIs.license.license_lookup
@@ -65,16 +64,6 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
             print("No Project Information Returned.")
             return -1
 
-        # Get details for  project
-        try:
-            projectInventoryResponse = CodeInsight_RESTAPIs.project.get_project_inventory.get_project_inventory_details(baseURL, projectID, authToken)
-        except:
-            logger.error("    No project ineventory response!")
-            print("No project inventory response.")
-            return -1
-
-
-
         # Create empty dictionary for project level data for this project
         projectData[projectName] = {}
 
@@ -83,8 +72,6 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
         numApproved = 0
         numRejected = 0
         numDraft = 0
-
-        inventoryItems = projectInventoryResponse["inventoryItems"]
         currentItem=0
 
         for inventoryItem in projectInventorySummary:
@@ -112,7 +99,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
 
             
             
-            logger.debug("Processing inventory items %s of %s" %(currentItem, len(inventoryItems)))
+            logger.debug("Processing inventory items %s of %s" %(currentItem, len(projectInventorySummary)))
             logger.debug("    %s" %(inventoryItemName))
             
             try:
