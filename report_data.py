@@ -107,7 +107,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
             inventoryLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory&pinv=" + str(inventoryID)
             
             try:
-                vulnerabilities = inventoryItem["vulnerabilitySummary"][0]["CVSS3.0"]
+                vulnerabilities = inventoryItem["vulnerabilitySummary"][0]["CvssV3"]
                 vulnerabilityData = create_inventory_summary_dict(vulnerabilities)
             except:
                 logger.debug("No vulnerabilies for %s - %s" %(componentName, componentVersionName))
@@ -153,11 +153,11 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
         projectData[projectName]["numP2Licenses"] = projectInformation["licenses"]["P2"]
         projectData[projectName]["numP3Licenses"] = projectInformation["licenses"]["P3"]
         projectData[projectName]["numNALicenses"] = projectInformation["licenses"]["Unknown"]
-        projectData[projectName]["numCriticalVulnerabilities"] = projectInformation["vulnerabilities"]["CVSS3.0"]["Critical"]
-        projectData[projectName]["numHighVulnerabilities"] = projectInformation["vulnerabilities"]["CVSS3.0"]["High"]
-        projectData[projectName]["numMediumVulnerabilities"] = projectInformation["vulnerabilities"]["CVSS3.0"]["Medium"]
-        projectData[projectName]["numLowVulnerabilities"] = projectInformation["vulnerabilities"]["CVSS3.0"]["Low"]
-        projectData[projectName]["numNoneVulnerabilities"] = projectInformation["vulnerabilities"]["CVSS3.0"]["None"]
+        projectData[projectName]["numCriticalVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["Critical"]
+        projectData[projectName]["numHighVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["High"]
+        projectData[projectName]["numMediumVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["Medium"]
+        projectData[projectName]["numLowVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["Low"]
+        projectData[projectName]["numNoneVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["None"]
         projectData[projectName]["projectLink"] = projectLink
 
     # Roll up the inventortory data at a project level for display charts

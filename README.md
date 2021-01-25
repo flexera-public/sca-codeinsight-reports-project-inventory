@@ -19,6 +19,7 @@ This repository utilizes the following via CDN for the creation of the report ar
 |1.0.x |2020R3  |
 |2.0.x |2020R3  |
 |2.1.x |2020R4  |
+|2.2.x |2021R1  |
 
 
 
