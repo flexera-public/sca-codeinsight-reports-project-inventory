@@ -18,8 +18,11 @@ import CodeInsight_RESTAPIs.license.license_lookup
 logger = logging.getLogger(__name__)
 
 #-------------------------------------------------------------------#
-def gather_data_for_report(baseURL, projectID, authToken, reportName):
+def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOptions):
     logger.info("Entering gather_data_for_report")
+
+    # Parse report options
+    includeChildProjects = reportOptions["options"]["includeChildProjects"]  # True/False
 
     projectList = [] # List to hold parent/child details for report
     inventoryData = {}  # Create a dictionary containing the inventory data using inventoryID as keys
@@ -39,7 +42,10 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
 
     projectList.append(nodeDetails)
 
-    projectList = create_project_hierarchy(projectHierarchy, projectHierarchy["id"], projectList, baseURL)
+    if includeChildProjects:
+        projectList = create_project_hierarchy(projectHierarchy, projectHierarchy["id"], projectList, baseURL)
+    else:
+        logger.debug("Child hierarchy disabled")
 
     #  Gather the details for each project and summerize the data
     for project in projectList:

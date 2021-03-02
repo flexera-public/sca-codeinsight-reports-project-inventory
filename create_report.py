@@ -13,6 +13,7 @@ import logging
 import argparse
 import zipfile
 import os
+import json
 
 import _version
 import report_data
@@ -42,6 +43,7 @@ parser.add_argument('-pid', "--projectID", help="Project ID")
 parser.add_argument("-rid", "--reportID", help="Report ID")
 parser.add_argument("-authToken", "--authToken", help="Code Insight Authorization Token")
 parser.add_argument("-baseURL", "--baseURL", help="Code Insight Core Server Protocol/Domain Name/Port.  i.e. http://localhost:8888 or https://sca.codeinsight.com:8443")
+parser.add_argument("-reportOpts", "--reportOptions", help="Options for report content")
 
 
 
@@ -59,14 +61,16 @@ def main():
 	reportID = args.reportID
 	authToken = args.authToken
 	baseURL = args.baseURL
+	reportOptions = json.loads(args.reportOptions)
 	
 	logger.debug("Custom Report Provided Arguments:")	
 	logger.debug("    projectID:  %s" %projectID)	
 	logger.debug("    reportID:   %s" %reportID)	
 	logger.debug("    baseURL:  %s" %baseURL)	
+	logger.debug("    reportOptions:  %s" %reportOptions)	
 
 	try:
-		reportData = report_data.gather_data_for_report(baseURL, projectID, authToken, reportName)
+		reportData = report_data.gather_data_for_report(baseURL, projectID, authToken, reportName, reportOptions)
 		print("    Report data has been collected")
 	except:
 		print("Error encountered while collecting report data.  Please see log for details")
