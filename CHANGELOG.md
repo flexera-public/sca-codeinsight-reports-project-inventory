@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2021-05-XX
+### Added
+- Added report options logic available in 2021R2
+
 ## [2.2.0] - 2021-02-XX
 ### Added
 - Bumped APIs for 2021R1 support due to vulnerability key changes
