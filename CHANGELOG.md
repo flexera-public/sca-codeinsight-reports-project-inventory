@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.2.0] - 2021-02-XX
+## [2.2.0] - 2021-03-16
 ### Added
 - Bumped APIs for 2021R1 support due to vulnerability key changes
 
