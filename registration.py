@@ -23,10 +23,22 @@ import CodeInsight_RESTAPIs.reports.delete_report
 reportName = "Project Inventory Report"  # What is the name to be shown within Code Insight?
 enableProjectPickerValue = "false"   # true if a second project can be used within this report
 
+reportOptions = []
+#
+reportOption = {}
+reportOption["name"] = "includeChildProjects"
+reportOption["label"] = "Include child project data"
+reportOption["description"] = "Should the report include data from child projects? <b>(True/False)</b>"
+reportOption["type"] = "string"
+reportOption["defaultValue"] = "True"
+reportOption["required"] = "true"
+reportOption["order"] = "1"
+reportOptions.append(reportOption)
+
 #####################################################################################################
 #  Code Insight System Information
-baseURL = "UPDATEME" # i.e. http://localhost:8888 or https://sca.mycodeinsight.com:8443 
-adminAuthToken = "UPDATEME"
+baseURL = "http://localhost:8888" # i.e. http://localhost:8888 or https://sca.mycodeinsight.com:8443 
+adminAuthToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzZ2VhcnkiLCJ1c2VySWQiOjksImlhdCI6MTYxNjEwNjgzNX0.veQvwM7kIQ08jDMn6bIEqzq3D2mndSMlJdtcTPidRXVXjnIz5zdxBpyZrgl0qNlP6vyyL86FSmWrW8-LCTBmEQ"
 
 #####################################################################################################
 # Quick sanity check
@@ -109,7 +121,7 @@ def register_custom_reports():
     print("Attempting to register %s with a report order of %s" %(reportName, reportOrder))
 
     try:
-        reportID = CodeInsight_RESTAPIs.reports.create_report.register_report(reportName, reportPath, reportOrder, enableProjectPickerValue, baseURL, adminAuthToken)
+        reportID = CodeInsight_RESTAPIs.reports.create_report.register_report(reportName, reportPath, reportOrder, enableProjectPickerValue, reportOptions, baseURL, adminAuthToken)
         print("%s has been registed with a report ID of %s" %(reportName, reportID))
         logger.info("%s has been registed with a report ID of %s" %(reportName, reportID))
     except:
