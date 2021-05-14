@@ -35,6 +35,16 @@ reportOption["required"] = "true"
 reportOption["order"] = "1"
 reportOptions.append(reportOption)
 
+reportOption = {}
+reportOption["name"] = "cvssVersion"
+reportOption["label"] = "CVSS Version (2.0/3.x)"
+reportOption["description"] = "What version of CVSS scoring to report on? <b>(2.0/3.x)</b>"
+reportOption["type"] = "string"
+reportOption["defaultValue"] = "3.x"
+reportOption["required"] = "true"
+reportOption["order"] = "2"
+reportOptions.append(reportOption)
+
 #####################################################################################################
 #  Code Insight System Information
 baseURL = "http://localhost:8888" # i.e. http://localhost:8888 or https://sca.mycodeinsight.com:8443 
