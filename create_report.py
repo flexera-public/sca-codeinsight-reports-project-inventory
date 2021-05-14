@@ -79,21 +79,24 @@ def main():
 
 	if "errorMsg" in reportOptions.keys():
 		reportOptions["reportName"] = reportName
+		projectName = "Error"
 		reports = report_errors.create_error_report(reportOptions)
 		print("    *** ERROR  ***  Error found validating report options")
 	else:
 		reportData = report_data.gather_data_for_report(baseURL, projectID, authToken, reportName, reportOptions)
 		print("    Report data has been collected")
 
+		projectName = reportData["projectName"].replace(" - ", "-").replace(" ", "_")
+
+
 		if "errorMsg" in reportData.keys():
 			reports = report_errors.create_error_report(reportData)
-			print("    Report artifacts have been created")
+			print("    Error report artifacts have been created")
 		else:
 			reports = report_artifacts.create_report_artifacts(reportData)
 			print("    Report artifacts have been created")
 
-
-	uploadZipfile = create_report_zipfile(reports, reportName)
+	uploadZipfile = create_report_zipfile(reports, reportName, projectName)
 	print("    Upload zip file creation completed")
 	CodeInsight_RESTAPIs.project.upload_reports.upload_project_report_data(baseURL, projectID, reportID, authToken, uploadZipfile)
 	print("    Report uploaded to Code Insight")
@@ -138,11 +141,11 @@ def verifyOptions(reportOptions):
 
 
 #---------------------------------------------------------------------#
-def create_report_zipfile(reportOutputs, reportName):
+def create_report_zipfile(reportOutputs, reportName, projectName):
 	logger.info("Entering create_report_zipfile")
 
 	# create a ZipFile object
-	allFormatZipFile = reportName.replace(" ", "_") + ".zip"
+	allFormatZipFile = projectName + "-" + reportName.replace(" ", "_") + ".zip"
 	allFormatsZip = zipfile.ZipFile(allFormatZipFile, 'w', zipfile.ZIP_DEFLATED)
 
 	logger.debug("     	  Create downloadable archive: %s" %allFormatZipFile)
@@ -157,7 +160,7 @@ def create_report_zipfile(reportOutputs, reportName):
 	print("        Downloadable archive created")
 
 	# Now create a temp zipfile of the zipfile along with the viewable file itself
-	uploadZipflle = reportName + "_upload.zip"
+	uploadZipflle = projectName + "-" + reportName.replace(" ", "_") + "_upload.zip"
 	print("        Create zip archive containing viewable and downloadable archive for upload: %s" %uploadZipflle)
 	logger.debug("    Create zip archive containing viewable and downloadable archive for upload: %s" %uploadZipflle)
 	zipToUpload = zipfile.ZipFile(uploadZipflle, 'w', zipfile.ZIP_DEFLATED)
