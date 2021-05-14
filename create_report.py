@@ -18,6 +18,7 @@ import json
 import _version
 import report_data
 import report_artifacts
+import report_errors
 import CodeInsight_RESTAPIs.project.upload_reports
 
 ###################################################################################
@@ -76,11 +77,21 @@ def main():
 	logger.debug("    baseURL:  %s" %baseURL)	
 	logger.debug("    reportOptions:  %s" %reportOptions)	
 
-	reportData = report_data.gather_data_for_report(baseURL, projectID, authToken, reportName, reportOptions)
-	print("    Report data has been collected")
+	if "errorMsg" in reportOptions.keys():
+		reportOptions["reportName"] = reportName
+		reports = report_errors.create_error_report(reportOptions)
+		print("    *** ERROR  ***  Error found validating report options")
+	else:
+		reportData = report_data.gather_data_for_report(baseURL, projectID, authToken, reportName, reportOptions)
+		print("    Report data has been collected")
 
-	reports = report_artifacts.create_report_artifacts(reportData)
-	print("    Report artifacts have been created")
+		if "errorMsg" in reportData.keys():
+			reports = report_errors.create_error_report(reportData)
+			print("    Report artifacts have been created")
+		else:
+			reports = report_artifacts.create_report_artifacts(reportData)
+			print("    Report artifacts have been created")
+
 
 	uploadZipfile = create_report_zipfile(reports, reportName)
 	print("    Upload zip file creation completed")
