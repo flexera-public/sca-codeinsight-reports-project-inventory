@@ -3,7 +3,7 @@
 set projectId=%1
 set reportId=%2
 set authToken=%3
-set reportOptions=%5
+set reportOptions=%4
 rem # These are not currently passed via the framework but should be in a future release
 set baseURL="http://localhost:8888"
 

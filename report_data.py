@@ -22,7 +22,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     logger.info("Entering gather_data_for_report")
 
     # Parse report options
-    includeChildProjects = reportOptions["options"]["includeChildProjects"]  # True/False
+    includeChildProjects = reportOptions["includeChildProjects"]  # True/False
 
     projectList = [] # List to hold parent/child details for report
     inventoryData = {}  # Create a dictionary containing the inventory data using inventoryID as keys
@@ -42,7 +42,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
 
     projectList.append(nodeDetails)
 
-    if includeChildProjects:
+    if includeChildProjects == "true":
         projectList = create_project_hierarchy(projectHierarchy, projectHierarchy["id"], projectList, baseURL)
     else:
         logger.debug("Child hierarchy disabled")
