@@ -116,28 +116,36 @@ def main():
 
 #----------------------------------------------------------------------# 
 def verifyOptions(reportOptions):
-    '''
-    Expected Options for report:
-        includeChildProjects - True/False
-    '''
-    reportOptions["errorMsg"] = []
-    trueOptions = ["true", "t", "yes", "y"]
-    falseOptions = ["false", "f", "no", "n"]
+	'''
+	Expected Options for report:
+		includeChildProjects - True/False
+	'''
+	reportOptions["errorMsg"] = []
+	trueOptions = ["true", "t", "yes", "y"]
+	falseOptions = ["false", "f", "no", "n"]
 
-    includeChildProjects = reportOptions["includeChildProjects"]
+	includeChildProjects = reportOptions["includeChildProjects"]
+	cvssVersion = reportOptions["cvssVersion"]
 
-    if includeChildProjects.lower() in trueOptions:
-        reportOptions["includeChildProjects"] = "true"
-    elif includeChildProjects.lower() in falseOptions:
-        reportOptions["includeChildProjects"] = "false"
-    else:
-        reportOptions["errorMsg"].append("Invalid option for including child projects: <b>%s</b>.  Valid options are <b>True/False</b>" %includeChildProjects)
+	if includeChildProjects.lower() in trueOptions:
+		reportOptions["includeChildProjects"] = "true"
+	elif includeChildProjects.lower() in falseOptions:
+		reportOptions["includeChildProjects"] = "false"
+	else:
+		reportOptions["errorMsg"].append("Invalid option for including child projects: <b>%s</b>.  Valid options are <b>True/False</b>" %includeChildProjects)
+
+	if cvssVersion.startswith("2"):
+		reportOptions["cvssVersion"] = "2.0"
+	elif cvssVersion.startswith("3"):
+		reportOptions["cvssVersion"]  = "3.x"
+	else:
+		reportOptions["errorMsg"].append("Invalid option for CVSS Version: <b>%s</b>.  Valid options are <b>2.0/3.x</b>" %cvssVersion)
     
 
-    if not reportOptions["errorMsg"]:
-        reportOptions.pop('errorMsg', None)
+	if not reportOptions["errorMsg"]:
+		reportOptions.pop('errorMsg', None)
 
-    return reportOptions
+	return reportOptions
 
 
 #---------------------------------------------------------------------#
