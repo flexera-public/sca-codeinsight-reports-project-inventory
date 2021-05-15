@@ -18,6 +18,13 @@ import CodeInsight_RESTAPIs.reports.get_reports
 import CodeInsight_RESTAPIs.reports.create_report
 import CodeInsight_RESTAPIs.reports.delete_report
 
+
+#####################################################################################################
+#  Code Insight System Information
+baseURL = "UPDATEME" # i.e. http://localhost:8888 or https://sca.mycodeinsight.com:8443 
+adminAuthToken = "UPDATEME"
+
+
 #####################################################################################################
 #  Report Details
 reportName = "Project Inventory Report"  # What is the name to be shown within Code Insight?
@@ -27,7 +34,7 @@ reportOptions = []
 #
 reportOption = {}
 reportOption["name"] = "includeChildProjects"
-reportOption["label"] = "Include child project data"
+reportOption["label"] = "Include child project data (True/False)"
 reportOption["description"] = "Should the report include data from child projects? <b>(True/False)</b>"
 reportOption["type"] = "string"
 reportOption["defaultValue"] = "True"
@@ -44,11 +51,6 @@ reportOption["defaultValue"] = "3.x"
 reportOption["required"] = "true"
 reportOption["order"] = "2"
 reportOptions.append(reportOption)
-
-#####################################################################################################
-#  Code Insight System Information
-baseURL = "http://localhost:8888" # i.e. http://localhost:8888 or https://sca.mycodeinsight.com:8443 
-adminAuthToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzZ2VhcnkiLCJ1c2VySWQiOjksImlhdCI6MTYxNjEwNjgzNX0.veQvwM7kIQ08jDMn6bIEqzq3D2mndSMlJdtcTPidRXVXjnIz5zdxBpyZrgl0qNlP6vyyL86FSmWrW8-LCTBmEQ"
 
 #####################################################################################################
 # Quick sanity check
