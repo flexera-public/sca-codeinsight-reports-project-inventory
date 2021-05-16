@@ -6,11 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.0.0] - 2021-05-XX
+## [3.0.1] - 2021-05-16
 ### Added
-- Added report options logic available in 2021R2
+- Added report option for including child projects
+- Added report option for CVSS version
+- Modify report artifact names based on project name
 
-## [2.2.0] - 2021-02-XX
+## [2.2.0] - 2021-03-16
 ### Added
 - Bumped APIs for 2021R1 support due to vulnerability key changes
 
