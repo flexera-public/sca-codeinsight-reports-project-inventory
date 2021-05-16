@@ -18,8 +18,12 @@ import CodeInsight_RESTAPIs.license.license_lookup
 logger = logging.getLogger(__name__)
 
 #-------------------------------------------------------------------#
-def gather_data_for_report(baseURL, projectID, authToken, reportName):
+def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOptions):
     logger.info("Entering gather_data_for_report")
+
+    # Parse report options
+    includeChildProjects = reportOptions["includeChildProjects"]  # True/False
+    cvssVersion = reportOptions["cvssVersion"]  # 2.0/3.x
 
     projectList = [] # List to hold parent/child details for report
     inventoryData = {}  # Create a dictionary containing the inventory data using inventoryID as keys
@@ -39,7 +43,10 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
 
     projectList.append(nodeDetails)
 
-    projectList = create_project_hierarchy(projectHierarchy, projectHierarchy["id"], projectList, baseURL)
+    if includeChildProjects == "true":
+        projectList = create_project_hierarchy(projectHierarchy, projectHierarchy["id"], projectList, baseURL)
+    else:
+        logger.debug("Child hierarchy disabled")
 
     #  Gather the details for each project and summerize the data
     for project in projectList:
@@ -58,7 +65,10 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
 
         # Get project summary information with v3 vulnerability roll up at inventory level
         try:
-            projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v3_summary(baseURL, projectID, authToken)
+            if cvssVersion == "3.x":
+                projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v3_summary(baseURL, projectID, authToken)
+            else:
+                projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v2_summary(baseURL, projectID, authToken)
         except:
             logger.error("    No Project Information Returned!")
             print("No Project Information Returned.")
@@ -105,10 +115,13 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
             componentUrl = inventoryItem["url"]
             inventoryReviewStatus = inventoryItem["reviewStatus"]          
             inventoryLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory&pinv=" + str(inventoryID)
-            
+
             try:
-                vulnerabilities = inventoryItem["vulnerabilitySummary"][0]["CvssV3"]
-                vulnerabilityData = create_inventory_summary_dict(vulnerabilities)
+                if cvssVersion == "3.x":
+                    vulnerabilities = inventoryItem["vulnerabilitySummary"][0]["CvssV3"]
+                else:
+                    vulnerabilities = inventoryItem["vulnerabilitySummary"][0]["CvssV2"]
+                vulnerabilityData = create_inventory_summary_dict(vulnerabilities, cvssVersion)
             except:
                 logger.debug("No vulnerabilies for %s - %s" %(componentName, componentVersionName))
                 vulnerabilityData = ""
@@ -153,15 +166,24 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
         projectData[projectName]["numP2Licenses"] = projectInformation["licenses"]["P2"]
         projectData[projectName]["numP3Licenses"] = projectInformation["licenses"]["P3"]
         projectData[projectName]["numNALicenses"] = projectInformation["licenses"]["Unknown"]
-        projectData[projectName]["numCriticalVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["Critical"]
-        projectData[projectName]["numHighVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["High"]
-        projectData[projectName]["numMediumVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["Medium"]
-        projectData[projectName]["numLowVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["Low"]
-        projectData[projectName]["numNoneVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["None"]
+
+        if cvssVersion == "3.x":
+            projectData[projectName]["numCriticalVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["Critical"]
+            projectData[projectName]["numHighVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["High"]
+            projectData[projectName]["numMediumVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["Medium"]
+            projectData[projectName]["numLowVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["Low"]
+            projectData[projectName]["numNoneVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["None"]
+        else:
+            projectData[projectName]["numHighVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV2"]["High"]
+            projectData[projectName]["numMediumVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV2"]["Medium"]
+            projectData[projectName]["numLowVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV2"]["Low"]
+            projectData[projectName]["numNoneVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV2"]["Unknown"]
+
         projectData[projectName]["projectLink"] = projectLink
 
     # Roll up the inventortory data at a project level for display charts
     projectSummaryData = create_project_summary_data_dict(projectData)
+    projectSummaryData["cvssVersion"] = cvssVersion
 
     # Roll up the individual project data to the application level
     applicationSummaryData = create_application_summary_data_dict(projectSummaryData)
@@ -181,16 +203,21 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName):
     return reportData
   
 #----------------------------------------------------------------------
-def create_inventory_summary_dict(vulnerabilities):
+def create_inventory_summary_dict(vulnerabilities,cvssVersion):
     logger.info("Entering create_inventory_summary_dict")
     
     vulnerabilityData = {}
     vulnerabilityData["numTotalVulnerabilities"] = sum(vulnerabilities.values())
-    vulnerabilityData["numCriticalVulnerabilities"] = vulnerabilities["Critical"]
+
     vulnerabilityData["numHighVulnerabilities"] = vulnerabilities["High"]
     vulnerabilityData["numMediumVulnerabilities"] = vulnerabilities["Medium"]
     vulnerabilityData["numLowVulnerabilities"] = vulnerabilities["Low"]
-    vulnerabilityData["numNoneVulnerabilities"] = vulnerabilities["None"]
+
+    if cvssVersion == "2.0":
+        vulnerabilityData["numNoneVulnerabilities"] = vulnerabilities["Unknown"]
+    elif cvssVersion == "3.x":
+        vulnerabilityData["numCriticalVulnerabilities"] = vulnerabilities["Critical"]
+        vulnerabilityData["numNoneVulnerabilities"] = vulnerabilities["None"]
 
     return vulnerabilityData
 
@@ -234,7 +261,7 @@ def create_project_summary_data_dict(projectData):
     # Grab the data for each project and add it in the correct order
     for projectName in projectData:
         for metric in projectData[projectName]:
-            if metric not in  ["P1InventoryItems", "projectLink"]:  # We don't care about these for now
+            if metric not in  ["P1InventoryItems", "projectLink", "cvssVersion"]:  # We don't care about these for now
                 projectSummaryData[metric].append(projectData[projectName][metric])
 
     projectSummaryData["projectNames"] = list(projectData.keys())
@@ -250,7 +277,10 @@ def create_application_summary_data_dict(projectSummaryData):
 
     # For each metric sum the data up
     for metric in projectSummaryData:
-        if metric != "projectNames":
+        if metric == "cvssVersion":
+            applicationSummaryData[metric] = projectSummaryData[metric]
+
+        elif metric != "projectNames":
             applicationSummaryData[metric] = sum(projectSummaryData[metric])
 
     logger.debug("Exiting get_application_summary_data")

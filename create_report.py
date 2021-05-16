@@ -13,10 +13,12 @@ import logging
 import argparse
 import zipfile
 import os
+import json
 
 import _version
 import report_data
 import report_artifacts
+import report_errors
 import CodeInsight_RESTAPIs.project.upload_reports
 
 ###################################################################################
@@ -42,6 +44,7 @@ parser.add_argument('-pid', "--projectID", help="Project ID")
 parser.add_argument("-rid", "--reportID", help="Report ID")
 parser.add_argument("-authToken", "--authToken", help="Code Insight Authorization Token")
 parser.add_argument("-baseURL", "--baseURL", help="Code Insight Core Server Protocol/Domain Name/Port.  i.e. http://localhost:8888 or https://sca.codeinsight.com:8443")
+parser.add_argument("-reportOpts", "--reportOptions", help="Options for report content")
 
 
 
@@ -59,46 +62,45 @@ def main():
 	reportID = args.reportID
 	authToken = args.authToken
 	baseURL = args.baseURL
-	
+	reportOptions = args.reportOptions
+
+	# Based on how the shell pass the arguemnts clean up the options if on a linux system:w
+	if sys.platform.startswith('linux'):
+		reportOptions = reportOptions.replace('""', '"')[1:-1]
+
+	reportOptions = json.loads(reportOptions)
+	reportOptions = verifyOptions(reportOptions) 
+
 	logger.debug("Custom Report Provided Arguments:")	
 	logger.debug("    projectID:  %s" %projectID)	
 	logger.debug("    reportID:   %s" %reportID)	
 	logger.debug("    baseURL:  %s" %baseURL)	
+	logger.debug("    reportOptions:  %s" %reportOptions)	
 
-	try:
-		reportData = report_data.gather_data_for_report(baseURL, projectID, authToken, reportName)
+	if "errorMsg" in reportOptions.keys():
+		reportOptions["reportName"] = reportName
+		projectName = "Error"
+		reports = report_errors.create_error_report(reportOptions)
+		print("    *** ERROR  ***  Error found validating report options")
+	else:
+		reportData = report_data.gather_data_for_report(baseURL, projectID, authToken, reportName, reportOptions)
 		print("    Report data has been collected")
-	except:
-		print("Error encountered while collecting report data.  Please see log for details")
-		logger.error("Error encountered while collecting report data.")
-		return -1
 
-	try:
-		reports = report_artifacts.create_report_artifacts(reportData)
-		print("    Report artifacts have been created")
-	except:
-		print("Error encountered while creating report artifacts.  Please see log for details")
-		logger.error("Error encountered while creating report artifacts.")
-		return -1
+		projectName = reportData["projectName"].replace(" - ", "-").replace(" ", "_")
 
-	#########################################################
-	# Create zip file to be uploaded to Code Insight
-	try:
-		uploadZipfile = create_report_zipfile(reports, reportName)
-		print("    Upload zip file creation completed")
-	except:
-		print("Error created zip archive for upload. Please see log for details")
-		logger.error("Error created zip archive for upload.")
-		return -1
 
-	#########################################################
-	# Upload the file to Code Insight
-	try:
-		CodeInsight_RESTAPIs.project.upload_reports.upload_project_report_data(baseURL, projectID, reportID, authToken, uploadZipfile)
-	except:
-		print("Error uploading archive to Code Insight")
-		logger.error("Error uploading archive to Code Insight.")
-		return -1
+		if "errorMsg" in reportData.keys():
+			reports = report_errors.create_error_report(reportData)
+			print("    Error report artifacts have been created")
+		else:
+			reports = report_artifacts.create_report_artifacts(reportData)
+			print("    Report artifacts have been created")
+
+	uploadZipfile = create_report_zipfile(reports, reportName, projectName)
+	print("    Upload zip file creation completed")
+	CodeInsight_RESTAPIs.project.upload_reports.upload_project_report_data(baseURL, projectID, reportID, authToken, uploadZipfile)
+	print("    Report uploaded to Code Insight")
+
 
 	#########################################################
 	# Remove the file since it has been uploaded to Code Insight
@@ -111,12 +113,47 @@ def main():
 	logger.info("Completed creating %s" %reportName)
 	print("Completed creating %s" %reportName)
 
+
+#----------------------------------------------------------------------# 
+def verifyOptions(reportOptions):
+	'''
+	Expected Options for report:
+		includeChildProjects - True/False
+	'''
+	reportOptions["errorMsg"] = []
+	trueOptions = ["true", "t", "yes", "y"]
+	falseOptions = ["false", "f", "no", "n"]
+
+	includeChildProjects = reportOptions["includeChildProjects"]
+	cvssVersion = reportOptions["cvssVersion"]
+
+	if includeChildProjects.lower() in trueOptions:
+		reportOptions["includeChildProjects"] = "true"
+	elif includeChildProjects.lower() in falseOptions:
+		reportOptions["includeChildProjects"] = "false"
+	else:
+		reportOptions["errorMsg"].append("Invalid option for including child projects: <b>%s</b>.  Valid options are <b>True/False</b>" %includeChildProjects)
+
+	if cvssVersion.startswith("2"):
+		reportOptions["cvssVersion"] = "2.0"
+	elif cvssVersion.startswith("3"):
+		reportOptions["cvssVersion"]  = "3.x"
+	else:
+		reportOptions["errorMsg"].append("Invalid option for CVSS Version: <b>%s</b>.  Valid options are <b>2.0/3.x</b>" %cvssVersion)
+    
+
+	if not reportOptions["errorMsg"]:
+		reportOptions.pop('errorMsg', None)
+
+	return reportOptions
+
+
 #---------------------------------------------------------------------#
-def create_report_zipfile(reportOutputs, reportName):
+def create_report_zipfile(reportOutputs, reportName, projectName):
 	logger.info("Entering create_report_zipfile")
 
 	# create a ZipFile object
-	allFormatZipFile = reportName.replace(" ", "_") + ".zip"
+	allFormatZipFile = projectName + "-" + reportName.replace(" ", "_") + ".zip"
 	allFormatsZip = zipfile.ZipFile(allFormatZipFile, 'w', zipfile.ZIP_DEFLATED)
 
 	logger.debug("     	  Create downloadable archive: %s" %allFormatZipFile)
@@ -131,7 +168,7 @@ def create_report_zipfile(reportOutputs, reportName):
 	print("        Downloadable archive created")
 
 	# Now create a temp zipfile of the zipfile along with the viewable file itself
-	uploadZipflle = reportName + "_upload.zip"
+	uploadZipflle = projectName + "-" + reportName.replace(" ", "_") + "_upload.zip"
 	print("        Create zip archive containing viewable and downloadable archive for upload: %s" %uploadZipflle)
 	logger.debug("    Create zip archive containing viewable and downloadable archive for upload: %s" %uploadZipflle)
 	zipToUpload = zipfile.ZipFile(uploadZipflle, 'w', zipfile.ZIP_DEFLATED)

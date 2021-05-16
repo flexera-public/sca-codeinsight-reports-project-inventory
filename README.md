@@ -20,6 +20,7 @@ This repository utilizes the following via CDN for the creation of the report ar
 |2.0.x |2020R3  |
 |2.1.x |2020R4  |
 |2.2.x |2021R1  |
+|3.0.x |2021R2  |
 
 
 
@@ -44,9 +45,29 @@ The [create_report.sh](create_report.sh) or [create_report.bat](create_report.ba
 
 For registration purposes update the **baseURL** and **adminAuthToken** values within [registration.py](registration.py) to reflect the correct values to allow the report itself to be registered on the Code Insight server.
 
+### Registering the Report
+
+
+Prior to being able to call the script directly from within Code Insight it must be registered. The registration.py file can be used to directly register the report once the contents of this repository have been copied into the custom_report_script folder at the base Code Insight installation directory.
+
+To register this report:
+
+    python registration.py -reg
+
+
+To unregister this report:
+
+    python registration.py -unreg
+
+
 ## Usage
 
-This report is executed directly from within Revenera's Code Insight product. From the summary page of each Code Insight project it is possible to *generate* the **Project Inventory Report** via the Custom Report Framework. Once this report is selected the second project for comparison can be selected
+This report is executed directly from within Revenera's Code Insight product. From the project reports tab of each Code Insight project it is possible to *generate* the **Project Inventory Report** via the Custom Report Framework.
+
+The following report options can be set once the report generation has been initiated:
+
+- Including child projects (True/False) - Determine if child project data will be included or not.
+- CVSS Version - (2.0/3.x/False) - Specify which CVSS version for vulnerability data.
 
 The Code Insight Custom Report Framework will provide the following to the custom report when initiated:
 
@@ -65,22 +86,6 @@ For this example report these three items are passed on to a batch or sh file wh
   - Create a zip file with the viewable file and the downloadable file
 - Upload this combined zip file to Code Insight via REST API
 - Delete the report artifacts that were created as the script ran
-
-
-
-### Registering the Report
-
-
-Prior to being able to call the script directly from within Code Insight it must be registered. The registration.py file can be used to directly register the report once the contents of this repository have been copied into the custom_report_script folder at the base Code Insight installation directory.
-
-To register this report:
-
-    python registration.py -reg
-
-
-To unregister this report:
-
-    python registration.py -unreg
 
 ## License
 
