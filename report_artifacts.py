@@ -405,13 +405,14 @@ def encodeImage(imageFile):
 def add_inventory_datatable(html_ptr):
     # Add the js for inventory datatable
     html_ptr.write('''
-        
-            var table = $('#inventoryData').DataTable();
 
-            $(document).ready(function() {
-                table;
-            } );
-    ''')
+            $(document).ready(function (){
+                var table = $('#inventoryData').DataTable({
+                    "order": [[ 2, "desc" ]],
+                    "lengthMenu": [ [25, 50, 100, -1], [25, 50, 100, "All"] ],
+                });
+            });
+        ''')    
 
 #----------------------------------------------------------------------------------------#
 def add_default_chart_options(html_ptr):
