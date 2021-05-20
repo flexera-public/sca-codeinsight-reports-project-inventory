@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.2] - 2021-05-20
+### Added
+- Modified data table display option to include all inventory items
+
 ## [3.0.1] - 2021-05-16
 ### Added
 - Added report option for including child projects
