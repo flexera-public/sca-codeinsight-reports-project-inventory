@@ -43,7 +43,7 @@ There are two locations that require updates to provide the report scripts detai
 
 The [create_report.sh](create_report.sh) or [create_report.bat](create_report.bat) file contains a **baseURL** value that should be updated to allow for project and inventory links to point to the correct system. 
 
-For registration purposes update the **baseURL** and **adminAuthToken** values within [registration.py](registration.py) to reflect the correct values to allow the report itself to be registered on the Code Insight server.
+For registration purposes update the **baseURL** and **adminAuthToken** values within [registration.py](registration.py) to reflect the correct values to allow the report itself to be registered on the Code Insight server.  These values can also be stored in common_config.json that resides one directory above the base report directory which can be shared for all reports. Report option default values can also be specified in [registration.py](registration.py) within the reportOptions dictionaries.
 
 ### Registering the Report
 
@@ -59,6 +59,9 @@ To unregister this report:
 
     python registration.py -unreg
 
+To update this report configuration:
+
+    python registration.py -update
 
 ## Usage
 
