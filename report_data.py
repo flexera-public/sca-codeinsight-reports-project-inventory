@@ -61,18 +61,16 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
         except:
             logger.error("    No Project Information Returned!")
             print("No Project Information Returned.")
-            return -1
 
-        # Get project summary information with v3 vulnerability roll up at inventory level
-        try:
-            if cvssVersion == "3.x":
-                projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v3_summary(baseURL, projectID, authToken)
-            else:
-                projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v2_summary(baseURL, projectID, authToken)
-        except:
-            logger.error("    No Project Information Returned!")
-            print("No Project Information Returned.")
-            return -1
+        # Get project summary information
+        if cvssVersion == "3.x":
+            projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v3_summary(baseURL, projectID, authToken)
+        else:
+            projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v2_summary(baseURL, projectID, authToken)
+        
+        if not projectInventorySummary:
+            logger.warning("    Project contains no inventory items")
+            print("Project contains no inventory items.")
 
         # Create empty dictionary for project level data for this project
         projectData[projectName] = {}
@@ -192,6 +190,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     reportData = {}
     reportData["reportName"] = reportName
     reportData["projectName"] = projectHierarchy["name"]
+    reportData["projectID"] = projectID
     reportData["inventoryData"] = inventoryData
     reportData["projectList"] =projectList
     reportData["projectSummaryData"] = projectSummaryData
