@@ -48,6 +48,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     else:
         logger.debug("Child hierarchy disabled")
 
+    projectInventoryCount = {}
+
     #  Gather the details for each project and summerize the data
     for project in projectList:
 
@@ -71,6 +73,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
         if not projectInventorySummary:
             logger.warning("    Project contains no inventory items")
             print("Project contains no inventory items.")
+
+        projectInventoryCount[projectName] = len(projectInventorySummary)
 
         # Create empty dictionary for project level data for this project
         projectData[projectName] = {}
@@ -195,6 +199,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     reportData["projectList"] =projectList
     reportData["projectSummaryData"] = projectSummaryData
     reportData["applicationSummaryData"] = applicationSummaryData
+    reportData["projectInventoryCount"] = projectInventoryCount
 
 
     logger.info("Exiting gather_data_for_report")

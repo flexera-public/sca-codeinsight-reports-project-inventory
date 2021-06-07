@@ -45,6 +45,7 @@ def generate_html_report(reportData):
     projectList = reportData["projectList"]
     projectSummaryData = reportData["projectSummaryData"]
     applicationSummaryData = reportData["applicationSummaryData"]
+    projectInventoryCount = reportData["projectInventoryCount"]
 
     cvssVersion = projectSummaryData["cvssVersion"]  # 2.0/3.x
    
@@ -375,7 +376,7 @@ def generate_html_report(reportData):
 
     if len(projectList) > 1:
         # Add the js for the project summary stacked bar charts
-        generate_project_hierarchy_tree(html_ptr, projectList)
+        generate_project_hierarchy_tree(html_ptr, projectList, projectInventoryCount)
         # Add the js for the project summary stacked bar charts
         generate_project_summary_charts(html_ptr, projectSummaryData)
     
@@ -599,12 +600,14 @@ def generate_application_summary_chart(html_ptr, applicationSummaryData):
     ''' %(applicationSummaryData["numApproved"], applicationSummaryData["numRejected"], applicationSummaryData["numDraft"]) )
 
 #----------------------------------------------------------------------------------------#
-def generate_project_hierarchy_tree(html_ptr, projectHierarchy):
+def generate_project_hierarchy_tree(html_ptr, projectHierarchy, projectInventoryCount):
     logger.info("Entering generate_project_hierarchy_tree")
 
     html_ptr.write('''var hierarchy = [\n''')
 
     for project in projectHierarchy:
+
+        inventoryCount = projectInventoryCount[project["projectName"]]
 
         html_ptr.write('''{
             'id': '%s', 
@@ -613,7 +616,7 @@ def generate_project_hierarchy_tree(html_ptr, projectHierarchy):
             'a_attr': {
                 'href': '%s'
             }
-        },\n'''  %(project["projectID"], project["parent"], project["projectName"], project["projectLink"]))
+        },\n'''  %(project["projectID"], project["parent"], project["projectName"] + " (" + str(inventoryCount) + " items)" , project["projectLink"]))
 
     html_ptr.write('''\n]''')
 
