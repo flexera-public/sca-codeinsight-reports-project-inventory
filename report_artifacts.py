@@ -12,6 +12,7 @@ import logging
 import os
 from datetime import datetime
 import base64
+import re
 
 
 logger = logging.getLogger(__name__)
@@ -74,8 +75,9 @@ def generate_html_report(reportData):
 
     # Grab the current date/time for report date stamp
     now = datetime.now().strftime("%B %d, %Y at %H:%M:%S")
-
-    htmlFile = reportName.replace(" ", "_") + "-" + str(projectID)  + "-" + fileNameTimeStamp + ".html"
+    
+    projectNameForFile = re.sub(r"[^a-zA-Z0-9]+", '-', projectName )
+    htmlFile = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".html"
 
     logger.debug("htmlFile: %s" %htmlFile)
 
