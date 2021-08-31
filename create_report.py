@@ -91,6 +91,7 @@ def main():
 		print("    Report data has been collected")
 		reportData["fileNameTimeStamp"] = fileNameTimeStamp
 		projectName = reportData["projectName"]
+		numProjects = len(reportData["projectList"])
 
 		if "errorMsg" in reportData.keys():
 			reports = report_errors.create_error_report(reportData)
@@ -100,7 +101,7 @@ def main():
 			print("    Report artifacts have been created")
 
 	print("    Create report archive for upload")
-	uploadZipfile = create_report_zipfile(reports, reportName, projectName, projectID, fileNameTimeStamp)
+	uploadZipfile = create_report_zipfile(reports, reportName, projectName, projectID, numProjects, fileNameTimeStamp)
 	print("    Upload zip file creation completed")
 	CodeInsight_RESTAPIs.project.upload_reports.upload_project_report_data(baseURL, projectID, reportID, authToken, uploadZipfile)
 	print("    Report uploaded to Code Insight")
@@ -153,13 +154,13 @@ def verifyOptions(reportOptions):
 
 
 #---------------------------------------------------------------------#
-def create_report_zipfile(reportOutputs, reportName, projectName, projectID, fileNameTimeStamp):
+def create_report_zipfile(reportOutputs, reportName, projectName, projectID, numProjects, fileNameTimeStamp):
 	logger.info("Entering create_report_zipfile")
 
 	projectNameForFile = re.sub(r"[^a-zA-Z0-9]+", '-', projectName )
 
 	# create a ZipFile object
-	if len(reportOutputs["allFormats"]) == 1 :
+	if numProjects == 1 :
 		allFormatZipFile = projectNameForFile + "-" + projectID + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".zip"
 	else: 
 		allFormatZipFile = projectNameForFile + "-" + projectID + "-with-children-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".zip"
