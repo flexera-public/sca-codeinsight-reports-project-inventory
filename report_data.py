@@ -126,7 +126,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                 vulnerabilityData = create_inventory_summary_dict(vulnerabilities, cvssVersion)
             except:
                 logger.debug("No vulnerabilies for %s - %s" %(componentName, componentVersionName))
-                vulnerabilityData = ""
+                vulnerabilityData = {'numTotalVulnerabilities': 0, 'numCriticalVulnerabilities': 0, 'numHighVulnerabilities': 0, 'numMediumVulnerabilities': 0, 'numLowVulnerabilities': 0, 'numNoneVulnerabilities': 0}
 
             # If there is a SPDX value use that otherwise use the full name based on the             
             if selectedLicenseSPDXIdentifier == "":
