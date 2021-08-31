@@ -99,19 +99,35 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             inventoryPriority = inventoryItem["priority"]
             componentVersionName = inventoryItem["componentVersionName"]
             selectedLicenseID = inventoryItem["selectedLicenseId"]
-            selectedLicenseSPDXIdentifier = inventoryItem["selectedLicenseSPDXIdentifier"]
+            selectedLicenseName = inventoryItem["selectedLicenseSPDXIdentifier"]
 
             if selectedLicenseID in licenseDetails.keys():
-                selectedLicenseUrl = licenseDetails[selectedLicenseID]
+                selectedLicenseName = licenseDetails[selectedLicenseID]["selectedLicenseName"]
+                selectedLicenseUrl = licenseDetails[selectedLicenseID]["selectedLicenseUrl"]
             else:
                 if selectedLicenseID != "N/A":  
-                    logger.debug("Fetching license details for %s with ID %s" %(selectedLicenseSPDXIdentifier, selectedLicenseID ))
-                    selectedLicenseUrl = CodeInsight_RESTAPIs.license.license_lookup.get_license_details(baseURL, selectedLicenseID, authToken)["url"]
-                    licenseDetails[selectedLicenseID] = selectedLicenseUrl
+                    logger.debug("Fetching license details for %s with ID %s" %(selectedLicenseName, selectedLicenseID ))
+                    licenseInformation = CodeInsight_RESTAPIs.license.license_lookup.get_license_details(baseURL, selectedLicenseID, authToken)
+                    licenseURL = licenseInformation["url"]
+                    spdxIdentifier = licenseInformation["spdxIdentifier"]
+
+                    if spdxIdentifier != "":
+                        licenseName = spdxIdentifier
+                    else:
+                        licenseName = licenseInformation["shortName"]
+
+                    licenseDetails[selectedLicenseID] = {}
+                    licenseDetails[selectedLicenseID]["selectedLicenseName"] = licenseName
+                    licenseDetails[selectedLicenseID]["selectedLicenseUrl"] = licenseURL
+
+                    selectedLicenseName = licenseName
+                    selectedLicenseUrl = licenseURL
+                    
                 else:
                     # Typically a WIP item
+                    selectedLicenseName = ""
                     selectedLicenseUrl = ""
-                    licenseDetails[selectedLicenseID] = selectedLicenseUrl
+
                     
             
             componentUrl = inventoryItem["url"]
@@ -128,11 +144,13 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                 logger.debug("No vulnerabilies for %s - %s" %(componentName, componentVersionName))
                 vulnerabilityData = {'numTotalVulnerabilities': 0, 'numCriticalVulnerabilities': 0, 'numHighVulnerabilities': 0, 'numMediumVulnerabilities': 0, 'numLowVulnerabilities': 0, 'numNoneVulnerabilities': 0}
 
-            # If there is a SPDX value use that otherwise use the full name based on the             
-            if selectedLicenseSPDXIdentifier == "":
-                selectedLicenseName = selectedLicenseID
-            else:
-                selectedLicenseName = selectedLicenseSPDXIdentifier
+            # # If there is a SPDX value use that otherwise use the full name based on the             
+            # if selectedLicenseSPDXIdentifier == "":
+            #     selectedLicenseName = selectedLicenseID
+            # else:
+            #     selectedLicenseName = selectedLicenseSPDXIdentifier
+
+
 
             inventoryData[inventoryID] = {
                 "projectName" : projectName,
