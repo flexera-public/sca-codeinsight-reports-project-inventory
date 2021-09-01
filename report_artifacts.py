@@ -65,7 +65,7 @@ def generate_xlsx_report(reportData):
     noneVulnColor = "#D3D3D3"
     approvedColor = "#008000"
     rejectedColor = "#C00000"
-    draftColor = "#000000"
+    draftColor = "#D3D3D3"
 
     projectNameForFile = re.sub(r"[^a-zA-Z0-9]+", '-', projectName )
     xlsxFile = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".xlsx"
@@ -168,7 +168,6 @@ def generate_xlsx_report(reportData):
     draftCellFormat.set_font_size('10')
     draftCellFormat.set_align('center')
     draftCellFormat.set_align('vcenter')
-    draftCellFormat.set_font_color(draftColor)
     draftCellFormat.set_border()
 
     # Populate the summary data for the charts
