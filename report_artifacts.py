@@ -65,7 +65,7 @@ def generate_xlsx_report(reportData):
     noneVulnColor = "#D3D3D3"
     approvedColor = "#008000"
     rejectedColor = "#C00000"
-    draftColor = "#D3D3D3"
+    draftColor = "#000000"
 
     projectNameForFile = re.sub(r"[^a-zA-Z0-9]+", '-', projectName )
     xlsxFile = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".xlsx"
@@ -73,7 +73,9 @@ def generate_xlsx_report(reportData):
 
     # Create the workbook/worksheet for storying the data
     workbook = xlsxwriter.Workbook(xlsxFile)
-    summaryWorksheet = workbook.add_worksheet('Inventory Summary') 
+    summaryWorksheet = workbook.add_worksheet('Project Summary') 
+    if len(projectList) > 1:
+        hierarchyWorksheet = workbook.add_worksheet('Project Hierarchy') 
     detailsWorksheet = workbook.add_worksheet('Inventory Details') 
     dataWorksheet = workbook.add_worksheet('Chart Data')
 
@@ -230,7 +232,7 @@ def generate_xlsx_report(reportData):
     catagoryHeaderRow = 1
     defaultChartWidth = 700
     summaryChartHeight = 150
-    
+
     ###############################################################################################
     # Do we need application level summary charts?
     if len(projectList) > 1:
@@ -390,6 +392,17 @@ def generate_xlsx_report(reportData):
         summaryWorksheet.insert_chart('L9', projectVulnerabilitySummaryChart)
         summaryWorksheet.insert_chart('W9', projectReviewStatusSummaryChart)     
 
+    if len(projectList) > 1:
+    # Add a Project Hierarchy view if there is more than one project
+        hierarchyWorksheet.write('B2', "Project Hierarchy")
+        hierarchyWorksheet.set_column('A:ZZ', 2)
+        hierarchyWorksheet.hide_gridlines(2)
+        
+        hierarchyWorksheet.write('C4', projectName) # Row 3, column 2
+        display_project_hierarchy(hierarchyWorksheet, projectID, projectList, 3, 2)
+
+
+
     # Fill out the inventory details worksheet
     column=0
     row=0
@@ -516,6 +529,37 @@ def generate_xlsx_report(reportData):
     workbook.close()
 
     return xlsxFile
+
+#------------------------------------------------------------#
+def display_project_hierarchy(worksheet, parentProjectID, projectList, row, column):
+
+    column +=1 #  We are level down so we need to indent
+    row +=1
+
+    for project in projectList:    
+
+        if project["parent"] == parentProjectID:
+            # This is a child so we need to move it down one row
+            projectID = project["projectID"]
+            projectName = project["projectName"]
+            worksheet.write( row, column, projectName)
+                
+            # If there are childern we need to move down a row          
+            row = display_project_hierarchy(worksheet, projectID, projectList, row, column)
+    
+    return row  # provide the current row back to th calling 
+
+        
+
+
+
+
+
+
+    
+        
+
+
 
 #------------------------------------------------------------------#
 def generate_html_report(reportData):
@@ -1245,3 +1289,9 @@ def generate_project_summary_charts(html_ptr, projectSummaryData):
     projectReviewStatusChart.options.title.text = "Review Status Summary"
     
     ''' %(projectSummaryData["projectNames"], projectSummaryData["numApproved"], projectSummaryData["numRejected"], projectSummaryData["numDraft"]) )
+
+
+
+
+
+    
