@@ -47,7 +47,7 @@ def generate_xlsx_report(reportData):
     projectList = reportData["projectList"]
     projectSummaryData = reportData["projectSummaryData"]
     applicationSummaryData = reportData["applicationSummaryData"]
-    projectInventoryCount = reportData["projectInventoryCount"]
+    projectHierarchy = reportData["projectHierarchy"]
     
     cvssVersion = projectSummaryData["cvssVersion"]  # 2.0/3.x
 
@@ -73,10 +73,11 @@ def generate_xlsx_report(reportData):
 
     # Create the workbook/worksheet for storying the data
     workbook = xlsxwriter.Workbook(xlsxFile)
-    summaryWorksheet = workbook.add_worksheet('Project Summary')
-    summaryWorksheet.hide_gridlines(2)
+
     if len(projectList) > 1:
         hierarchyWorksheet = workbook.add_worksheet('Project Hierarchy') 
+    summaryWorksheet = workbook.add_worksheet('Project Summary')
+    summaryWorksheet.hide_gridlines(2)
     detailsWorksheet = workbook.add_worksheet('Inventory Details') 
     dataWorksheet = workbook.add_worksheet('Chart Data')
 
@@ -169,6 +170,16 @@ def generate_xlsx_report(reportData):
     draftCellFormat.set_align('center')
     draftCellFormat.set_align('vcenter')
     draftCellFormat.set_border()
+
+    if len(projectList) > 1:
+    # Add a Project Hierarchy view if there is more than one project
+        hierarchyWorksheet.merge_range('B2:M2', "Project Hierarchy", tableHeaderFormat)
+        hierarchyWorksheet.set_column('A:Z', 2)
+        hierarchyWorksheet.hide_gridlines(2)
+        
+        hierarchyWorksheet.write('C4', projectName) # Row 3, column 2
+        display_project_hierarchy(hierarchyWorksheet, projectHierarchy, 3, 2)
+
 
     # Populate the summary data for the charts
     dataWorksheet.write('A3', "Application Summary")
@@ -392,17 +403,6 @@ def generate_xlsx_report(reportData):
         summaryWorksheet.insert_chart('L9', projectVulnerabilitySummaryChart)
         summaryWorksheet.insert_chart('W9', projectReviewStatusSummaryChart)     
 
-    if len(projectList) > 1:
-    # Add a Project Hierarchy view if there is more than one project
-        hierarchyWorksheet.write('B2', "Project Hierarchy")
-        hierarchyWorksheet.set_column('A:ZZ', 2)
-        hierarchyWorksheet.hide_gridlines(2)
-        
-        hierarchyWorksheet.write('C4', projectName) # Row 3, column 2
-        display_project_hierarchy(hierarchyWorksheet, projectID, projectList, 3, 2)
-
-
-
     # Fill out the inventory details worksheet
     column=0
     row=0
@@ -531,23 +531,23 @@ def generate_xlsx_report(reportData):
     return xlsxFile
 
 #------------------------------------------------------------#
-def display_project_hierarchy(worksheet, parentProjectID, projectList, row, column):
+def display_project_hierarchy(worksheet, parentProject, row, column):
 
     column +=1 #  We are level down so we need to indent
     row +=1
+    # Are there more child projects for this project?
 
-    for project in projectList:    
-
-        if project["parent"] == parentProjectID:
-            # This is a child so we need to move it down one row
-            projectID = project["projectID"]
-            projectName = project["projectName"]
+    if len(parentProject["childProject"]):
+        for childProject in parentProject["childProject"]:
+            projectID = childProject["id"]
+            projectName = childProject["name"]
+            # Add this ID to the list of projects with other child projects
+            # and get then do it again
             worksheet.write( row, column, projectName)
-                
-            # If there are childern we need to move down a row          
-            row = display_project_hierarchy(worksheet, projectID, projectList, row, column)
-    
-    return row  # provide the current row back to th calling 
+
+            row =  display_project_hierarchy(worksheet, childProject, row, column)
+    return row
+
 
         
 
