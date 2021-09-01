@@ -73,7 +73,8 @@ def generate_xlsx_report(reportData):
 
     # Create the workbook/worksheet for storying the data
     workbook = xlsxwriter.Workbook(xlsxFile)
-    summaryWorksheet = workbook.add_worksheet('Project Summary') 
+    summaryWorksheet = workbook.add_worksheet('Project Summary')
+    summaryWorksheet.hide_gridlines(2)
     if len(projectList) > 1:
         hierarchyWorksheet = workbook.add_worksheet('Project Hierarchy') 
     detailsWorksheet = workbook.add_worksheet('Inventory Details') 
