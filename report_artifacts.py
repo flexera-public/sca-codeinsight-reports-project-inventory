@@ -68,7 +68,12 @@ def generate_xlsx_report(reportData):
     draftColor = "#D3D3D3"
 
     projectNameForFile = re.sub(r"[^a-zA-Z0-9]+", '-', projectName )
-    xlsxFile = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".xlsx"
+
+    if len(projectList)==1:
+        xlsxFile = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".xlsx"
+    else:
+        xlsxFile = projectNameForFile + "-" + str(projectID)+ "-with-children-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".xlsx" 
+
     logger.debug("xlsxFile: %s" %xlsxFile)
 
     # Create the workbook/worksheet for storying the data
@@ -622,7 +627,11 @@ def generate_html_report(reportData):
     now = datetime.now().strftime("%B %d, %Y at %H:%M:%S")
     
     projectNameForFile = re.sub(r"[^a-zA-Z0-9]+", '-', projectName )
-    htmlFile = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".html"
+
+    if len(projectList)==1:
+        htmlFile = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".html"
+    else:
+        htmlFile = projectNameForFile + "-" + str(projectID)+ "-with-children-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".html" 
 
     logger.debug("htmlFile: %s" %htmlFile)
 
