@@ -74,10 +74,19 @@ def generate_xlsx_report(reportData):
     # Create the workbook/worksheet for storying the data
     workbook = xlsxwriter.Workbook(xlsxFile)
 
+    # If there is more than one project in hierarchy create sep tabs 
+    # for summary data and include project hierarchy
     if len(projectList) > 1:
-        hierarchyWorksheet = workbook.add_worksheet('Project Hierarchy') 
-    summaryWorksheet = workbook.add_worksheet('Project Summary')
-    summaryWorksheet.hide_gridlines(2)
+        licenseSummaryWorksheet = workbook.add_worksheet('License Summary')
+        licenseSummaryWorksheet.hide_gridlines(2)
+        vulnerabilitySummaryWorksheet = workbook.add_worksheet('Vulnerability Summary')
+        vulnerabilitySummaryWorksheet.hide_gridlines(2)
+        reviewSummaryWorksheet = workbook.add_worksheet('Review Summary')
+        reviewSummaryWorksheet.hide_gridlines(2)
+    else:
+        projectSummaryWorksheet = workbook.add_worksheet('Project Summary')
+        projectSummaryWorksheet.hide_gridlines(2)
+
     detailsWorksheet = workbook.add_worksheet('Inventory Details') 
     dataWorksheet = workbook.add_worksheet('Chart Data')
 
@@ -105,6 +114,11 @@ def generate_xlsx_report(reportData):
     cellLinkFormat.set_font_color('blue')
     cellLinkFormat.set_underline()
     cellLinkFormat.set_border()
+
+    boldCellFormat = workbook.add_format()
+    boldCellFormat.set_align('vcenter')
+    boldCellFormat.set_font_size('12')
+    boldCellFormat.set_bold()
 
     criticalVulnerabilityCellFormat = workbook.add_format()
     criticalVulnerabilityCellFormat.set_text_wrap()
@@ -170,16 +184,6 @@ def generate_xlsx_report(reportData):
     draftCellFormat.set_align('center')
     draftCellFormat.set_align('vcenter')
     draftCellFormat.set_border()
-
-    if len(projectList) > 1:
-    # Add a Project Hierarchy view if there is more than one project
-        hierarchyWorksheet.merge_range('B2:M2', "Project Hierarchy", tableHeaderFormat)
-        hierarchyWorksheet.set_column('A:Z', 2)
-        hierarchyWorksheet.hide_gridlines(2)
-        
-        hierarchyWorksheet.write('C4', projectName) # Row 3, column 2
-        display_project_hierarchy(hierarchyWorksheet, projectHierarchy, 3, 2)
-
 
     # Populate the summary data for the charts
     dataWorksheet.write('A3', "Application Summary")
@@ -248,7 +252,19 @@ def generate_xlsx_report(reportData):
     # Do we need application level summary charts?
     if len(projectList) > 1:
 
-        applicationSummaryRow = 2 
+        # Add project hierarchy view for each summary tab
+        for summaryWorksheet in [licenseSummaryWorksheet, vulnerabilitySummaryWorksheet, reviewSummaryWorksheet]:
+
+            summaryWorksheet.merge_range('B2:M2', "Project Hierarchy", tableHeaderFormat)
+            summaryWorksheet.set_column('A:Z', 2)
+            summaryWorksheet.hide_gridlines(2)
+            
+            summaryWorksheet.write('C4', projectName, boldCellFormat) # Row 3, column 2
+            display_project_hierarchy(summaryWorksheet, projectHierarchy, 3, 2, boldCellFormat)
+
+
+        # Create the charts now
+        applicationSummaryRow = 2  
         
         applicationLicenseSummaryChart = workbook.add_chart({'type': 'bar', 'subtype': 'stacked'})
         applicationLicenseSummaryChart.set_title({'name': 'Application License Summary'})
@@ -313,9 +329,9 @@ def generate_xlsx_report(reportData):
                 'values':     ['Chart Data', applicationSummaryRow, columnIndex+reviewStatusDataStartColumn, applicationSummaryRow, columnIndex+reviewStatusDataStartColumn],
                 'fill':       {'color': reviewStatusBarColors[columnIndex]}            }) 
 
-        summaryWorksheet.insert_chart('A2', applicationLicenseSummaryChart)
-        summaryWorksheet.insert_chart('L2', applicationVulnerabilitySummaryChart)
-        summaryWorksheet.insert_chart('W2', applicationReviewStatusSummaryChart)
+        licenseSummaryWorksheet.insert_chart('AA2', applicationLicenseSummaryChart)
+        vulnerabilitySummaryWorksheet.insert_chart('AA2', applicationVulnerabilitySummaryChart)
+        reviewSummaryWorksheet.insert_chart('AA2', applicationReviewStatusSummaryChart)
 
     # Now print the project level data
     projectDataStartRow = 3 
@@ -395,13 +411,15 @@ def generate_xlsx_report(reportData):
             'fill':       {'color': reviewStatusBarColors[columnIndex]}        }) 
 
     if len(projectList) == 1:
-        summaryWorksheet.insert_chart('A2', projectLicenseSummaryChart)
-        summaryWorksheet.insert_chart('A11', projectVulnerabilitySummaryChart)
-        summaryWorksheet.insert_chart('A20', projectReviewStatusSummaryChart)
+        projectSummaryWorksheet.insert_chart('A2', projectLicenseSummaryChart)
+        projectSummaryWorksheet.insert_chart('A11', projectVulnerabilitySummaryChart)
+        projectSummaryWorksheet.insert_chart('A20', projectReviewStatusSummaryChart)
     else:
-        summaryWorksheet.insert_chart('A9', projectLicenseSummaryChart)
-        summaryWorksheet.insert_chart('L9', projectVulnerabilitySummaryChart)
-        summaryWorksheet.insert_chart('W9', projectReviewStatusSummaryChart)     
+        licenseSummaryWorksheet.insert_chart('AA9', projectLicenseSummaryChart)
+        vulnerabilitySummaryWorksheet.insert_chart('AA9', projectVulnerabilitySummaryChart)
+        reviewSummaryWorksheet.insert_chart('AA9', projectReviewStatusSummaryChart) 
+        
+            
 
     # Fill out the inventory details worksheet
     column=0
@@ -531,7 +549,7 @@ def generate_xlsx_report(reportData):
     return xlsxFile
 
 #------------------------------------------------------------#
-def display_project_hierarchy(worksheet, parentProject, row, column):
+def display_project_hierarchy(worksheet, parentProject, row, column, boldCellFormat):
 
     column +=1 #  We are level down so we need to indent
     row +=1
@@ -543,9 +561,9 @@ def display_project_hierarchy(worksheet, parentProject, row, column):
             projectName = childProject["name"]
             # Add this ID to the list of projects with other child projects
             # and get then do it again
-            worksheet.write( row, column, projectName)
+            worksheet.write( row, column, projectName, boldCellFormat)
 
-            row =  display_project_hierarchy(worksheet, childProject, row, column)
+            row =  display_project_hierarchy(worksheet, childProject, row, column, boldCellFormat)
     return row
 
 
