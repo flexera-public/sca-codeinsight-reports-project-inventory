@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.1] - 2021-09-09
+### Added
+- Include xlxs report to artifacts
+- Update artifact names to include project name
+- Update to SPDX license vs full license name
+
 ## [3.0.4] - 2021-06-07
 ### Added
 - Artifact file name changes based on project ID and time
