@@ -48,12 +48,22 @@ reportOptions = []
 #
 reportOption = {}
 reportOption["name"] = "includeChildProjects"
-reportOption["label"] = "Include child project data (True/False)"
+reportOption["label"] = "Include child project data? (True/False)"
 reportOption["description"] = "Should the report include data from child projects? <b>(True/False)</b>"
 reportOption["type"] = "string"
 reportOption["defaultValue"] = "True"
 reportOption["required"] = "true"
 reportOption["order"] = "1"
+reportOptions.append(reportOption)
+
+reportOption = {}
+reportOption["name"] = "includeComplianceInformation"
+reportOption["label"] = "Include compliance details? (True/False)"
+reportOption["description"] = "Should the report include compliance related data? <b>(True/False)</b>"
+reportOption["type"] = "string"
+reportOption["defaultValue"] = "True"
+reportOption["required"] = "true"
+reportOption["order"] = "2"
 reportOptions.append(reportOption)
 
 reportOption = {}
@@ -63,8 +73,9 @@ reportOption["description"] = "What version of CVSS scoring to report on? <b>(2.
 reportOption["type"] = "string"
 reportOption["defaultValue"] = "3.x"
 reportOption["required"] = "true"
-reportOption["order"] = "2"
+reportOption["order"] = "3"
 reportOptions.append(reportOption)
+
 
 #####################################################################################################
 # Get the directory name in order to register the script
