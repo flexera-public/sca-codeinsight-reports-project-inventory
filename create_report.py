@@ -81,9 +81,13 @@ def main():
 	logger.debug("    baseURL:  %s" %baseURL)	
 	logger.debug("    reportOptions:  %s" %reportOptions)	
 
+	# Did we fail the options validation?
 	if "errorMsg" in reportOptions.keys():
 		reportOptions["reportName"] = reportName
-		projectName = "Error"
+		reportOptions["fileNameTimeStamp"] = fileNameTimeStamp
+		reportOptions["projectID"] = projectID
+		projectName = "Report_Creation_Error"
+		numProjects = 0  # No project information gathered
 		reports = report_errors.create_error_report(reportOptions)
 		print("    *** ERROR  ***  Error found validating report options")
 	else:
@@ -130,6 +134,7 @@ def verifyOptions(reportOptions):
 	falseOptions = ["false", "f", "no", "n"]
 
 	includeChildProjects = reportOptions["includeChildProjects"]
+	includeComplianceInformation = reportOptions["includeComplianceInformation"]
 	cvssVersion = reportOptions["cvssVersion"]
 
 	if includeChildProjects.lower() in trueOptions:
@@ -138,6 +143,13 @@ def verifyOptions(reportOptions):
 		reportOptions["includeChildProjects"] = "false"
 	else:
 		reportOptions["errorMsg"].append("Invalid option for including child projects: <b>%s</b>.  Valid options are <b>True/False</b>" %includeChildProjects)
+
+	if includeComplianceInformation.lower() in trueOptions:
+		reportOptions["includeComplianceInformation"] = True
+	elif includeComplianceInformation.lower() in falseOptions:
+		reportOptions["includeComplianceInformation"] = False
+	else:
+		reportOptions["errorMsg"].append("Invalid option for including compliance information: <b>%s</b>.  Valid options are <b>True/False</b>" %includeComplianceInformation)
 
 	if cvssVersion.startswith("2"):
 		reportOptions["cvssVersion"] = "2.0"
@@ -160,10 +172,10 @@ def create_report_zipfile(reportOutputs, reportName, projectName, projectID, num
 	projectNameForFile = re.sub(r"[^a-zA-Z0-9]+", '-', projectName )
 
 	# create a ZipFile object
-	if numProjects == 1 :
+	if numProjects <= 1 :
 		allFormatZipFile = projectNameForFile + "-" + projectID + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".zip"
 	else: 
-		allFormatZipFile = projectNameForFile + "-" + projectID + "-with-children-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".zip"
+		allFormatZipFile = projectNameForFile + "-with-children-"  + projectID + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".zip"
 
 	# create a ZipFile object
 	allFormatsZip = zipfile.ZipFile(allFormatZipFile, 'w', zipfile.ZIP_DEFLATED)

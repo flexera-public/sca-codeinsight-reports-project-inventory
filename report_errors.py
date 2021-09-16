@@ -9,7 +9,6 @@ File : report_errors.py
 '''
 import logging
 import os
-from datetime import datetime
 import base64
 
 logger = logging.getLogger(__name__)
@@ -40,7 +39,10 @@ def generate_error_report(reportData):
     iconFile =  os.path.join(scriptDirectory, "html-assets/images/favicon-revenera.ico")
     
     reportName = "Report Creation Failure"
-    reportName = reportData["reportName"] + " - Report Creation Failure"
+    reportName = reportData["reportName"] + "_Error"
+    projectID = reportData["projectID"]
+    fileNameTimeStamp = reportData["fileNameTimeStamp"]
+
     errorMsg = reportData["errorMsg"]
 
     #########################################################
@@ -49,8 +51,7 @@ def generate_error_report(reportData):
     encodedfaviconImage = encodeImage(iconFile)
 
     # Grab the current date/time for report date stamp
-    now = datetime.now().strftime("%B %d, %Y at %H:%M:%S")
-    htmlFile = reportName.replace(" ", "_") + ".html"
+    htmlFile = reportName.replace(" ", "_") + "-" + str(projectID) + "-" + fileNameTimeStamp + ".html"
     logger.debug("htmlFile: %s" %htmlFile)
     
     #---------------------------------------------------------------------------------------------------
@@ -126,7 +127,7 @@ def generate_error_report(reportData):
     html_ptr.write("<!-- BEGIN FOOTER -->\n")
     html_ptr.write("<div class='report-footer'>\n")
     html_ptr.write("  <div style='float:left'>&copy; 2021 Flexera</div>\n")
-    html_ptr.write("  <div style='float:right'>Generated on %s</div>\n" %now)
+    html_ptr.write("  <div style='float:left'>&copy; %s Flexera</div>\n" %fileNameTimeStamp[0:4])
     html_ptr.write("</div>\n")
     html_ptr.write("<!-- END FOOTER -->\n")   
 
