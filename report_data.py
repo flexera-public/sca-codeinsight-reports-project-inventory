@@ -23,6 +23,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
 
     # Parse report options
     includeChildProjects = reportOptions["includeChildProjects"]  # True/False
+    includeComplianceInformation = reportOptions["includeComplianceInformation"]  # True/False
     cvssVersion = reportOptions["cvssVersion"]  # 2.0/3.x
 
     projectList = [] # List to hold parent/child details for report
@@ -89,6 +90,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
         for inventoryItem in projectInventorySummary:
             currentItem +=1
 
+            complianceIssues = []
+
             inventoryID = inventoryItem["id"]
             inventoryItemName = inventoryItem["name"]
 
@@ -104,12 +107,14 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             if selectedLicenseID in licenseDetails.keys():
                 selectedLicenseName = licenseDetails[selectedLicenseID]["selectedLicenseName"]
                 selectedLicenseUrl = licenseDetails[selectedLicenseID]["selectedLicenseUrl"]
+                selectedLicensePriority = licenseDetails[selectedLicenseID]["selectedLicensePriority"]
             else:
                 if selectedLicenseID != "N/A":  
                     logger.debug("Fetching license details for %s with ID %s" %(selectedLicenseName, selectedLicenseID ))
                     licenseInformation = CodeInsight_RESTAPIs.license.license_lookup.get_license_details(baseURL, selectedLicenseID, authToken)
                     licenseURL = licenseInformation["url"]
                     spdxIdentifier = licenseInformation["spdxIdentifier"]
+                    licensePriority = licenseInformation["priority"]
 
                     if spdxIdentifier != "":
                         licenseName = spdxIdentifier
@@ -119,19 +124,20 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                     licenseDetails[selectedLicenseID] = {}
                     licenseDetails[selectedLicenseID]["selectedLicenseName"] = licenseName
                     licenseDetails[selectedLicenseID]["selectedLicenseUrl"] = licenseURL
+                    licenseDetails[selectedLicenseID]["selectedLicensePriority"] = licensePriority
 
                     selectedLicenseName = licenseName
                     selectedLicenseUrl = licenseURL
-                    
+                    selectedLicensePriority = licensePriority
+                     
                 else:
                     # Typically a WIP item
                     selectedLicenseName = ""
-                    selectedLicenseUrl = ""
-
-                    
+                    selectedLicenseUrl = ""     
+                    selectedLicensePriority = ""
             
             componentUrl = inventoryItem["url"]
-            inventoryReviewStatus = inventoryItem["reviewStatus"]          
+            inventoryReviewStatus = inventoryItem["reviewStatus"] 
             inventoryLink = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectID) + "&tab=projectInventory&pinv=" + str(inventoryID)
 
             try:
@@ -150,8 +156,42 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             # else:
             #     selectedLicenseName = selectedLicenseSPDXIdentifier
 
+            ############################################################################################
+            # Determine if there are any compliance issues to report on
+            if includeComplianceInformation:
+                
+                # Check review status
+                if inventoryReviewStatus == "Rejected":
+                    reviewIssue = {"issue": "Item rejected"}
+                    reviewIssue.update( {"remediation" : "This item has been rejected for use. Please consult with your legal and/or security team for further guidance."})
+                    complianceIssues.append(reviewIssue)
+
+                elif inventoryReviewStatus == "Draft":
+                    reviewIssue = {"issue": "Item not reviewed"}
+                    reviewIssue.update( {"remediation" : "This item has not been reviewed for use. Please consult with your legal and/or security team for further guidance."})
+                    complianceIssues.append(reviewIssue)
+
+                # Check if there is vulnerability data
+                if sum(vulnerabilityData.values()) > 0:
+                    reviewIssue = {"issue": "Security vulnerabilities"}
+                    reviewIssue.update( {"remediation" : "This item has associated security vulnerabilites. Please consult with your security team for further guidance."})
+                    complianceIssues.append(reviewIssue)
+
+                # License compliance issue
+                if selectedLicensePriority == 1:
+                    reviewIssue = {"issue": "P1 license"}
+                    reviewIssue.update( {"remediation" : "This item has a viral or strong copyleft license. Depnding on your usage there may be additional oblilgations. Please consult with your legal team.."})
+                    complianceIssues.append(reviewIssue)
 
 
+                # TODO Determine if there are any issues with the version
+
+                if componentVersionName == "N/A":
+                    reviewIssue = {"issue": "Unknown version"}
+                    reviewIssue.update( {"remediation" : "This item has an unknown version. Additional analysis is recommended."})
+                    complianceIssues.append(reviewIssue)
+
+            # Store the data for the inventory item for reporting
             inventoryData[inventoryID] = {
                 "projectName" : projectName,
                 "inventoryItemName" : inventoryItemName,
@@ -164,7 +204,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                 "selectedLicenseUrl" : selectedLicenseUrl,
                 "inventoryReviewStatus" : inventoryReviewStatus,
                 "inventoryLink" : inventoryLink,
-                "projectLink" : projectLink
+                "projectLink" : projectLink,
+                "complianceIssues" : complianceIssues
             }
 
             #############################################
@@ -203,6 +244,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
 
     # Roll up the inventortory data at a project level for display charts
     projectSummaryData = create_project_summary_data_dict(projectData)
+    projectSummaryData["includeComplianceInformation"] = includeComplianceInformation
     projectSummaryData["cvssVersion"] = cvssVersion
 
     # Roll up the individual project data to the application level
@@ -303,7 +345,7 @@ def create_application_summary_data_dict(projectSummaryData):
         if metric == "cvssVersion":
             applicationSummaryData[metric] = projectSummaryData[metric]
 
-        elif metric != "projectNames":
+        elif metric != "projectNames" and metric != "includeComplianceInformation":
             applicationSummaryData[metric] = sum(projectSummaryData[metric])
 
     logger.debug("Exiting get_application_summary_data")

@@ -572,18 +572,6 @@ def display_project_hierarchy(worksheet, parentProject, row, column, boldCellFor
     return row
 
 
-        
-
-
-
-
-
-
-    
-        
-
-
-
 #------------------------------------------------------------------#
 def generate_html_report(reportData):
     logger.info("    Entering generate_html_report")
@@ -599,6 +587,7 @@ def generate_html_report(reportData):
     projectInventoryCount = reportData["projectInventoryCount"]
 
     cvssVersion = projectSummaryData["cvssVersion"]  # 2.0/3.x
+    includeComplianceInformation = projectSummaryData["includeComplianceInformation"]  # True/False
    
     scriptDirectory = os.path.dirname(os.path.realpath(__file__))
     cssFile =  os.path.join(scriptDirectory, "html-assets/css/revenera_common.css")
@@ -795,6 +784,10 @@ def generate_html_report(reportData):
     html_ptr.write("            <th style='width: 5%' class='text-center'>LICENSE</th>\n") 
     html_ptr.write("            <th style='width: 18%' class='text-center'>VULNERABILITIES</th>\n")
     html_ptr.write("            <th style='width: 7%' class='text-center text-nowrap'>REVIEW STATUS</th>\n")
+
+    if includeComplianceInformation:
+        html_ptr.write("            <th style='width: 10%' class='text-center text-nowrap'>COMPLIANCE ISSUES</th>\n")
+
     html_ptr.write("        </tr>\n")
     html_ptr.write("    </thead>\n")  
     html_ptr.write("    <tbody>\n")  
@@ -816,6 +809,7 @@ def generate_html_report(reportData):
         inventoryReviewStatus = inventoryData[inventoryID]["inventoryReviewStatus"]
         inventoryLink = inventoryData[inventoryID]["inventoryLink"]
         projectLink = inventoryData[inventoryID]["projectLink"]
+        complianceIssues = inventoryData[inventoryID]["complianceIssues"]
 
         logger.debug("Reporting for inventory item %s" %inventoryID)
 
@@ -883,6 +877,16 @@ def generate_html_report(reportData):
             html_ptr.write("            <td class='text-left text-nowrap' style='color:gray;'><img src='data:image/png;base64, %s' width='15px' height='15px' style='margin-top: -2px;'> %s</td>\n" %(encodedStatusDraftIcon.decode('utf-8'), inventoryReviewStatus))
         else:
             html_ptr.write("            <td class='text-left text-nowrap'>%s</td>\n" %(inventoryReviewStatus))
+
+        if includeComplianceInformation:
+            if len(complianceIssues):
+                html_ptr.write("            <td class='text-left text-nowrap'>")
+                for complianceIssue in complianceIssues:
+                    html_ptr.write("<span class='dot dot-red'></span><span title='%s'>%s</span><br/>\n" %(complianceIssue["remediation"], complianceIssue["issue"]))
+                html_ptr.write("</td>\n")
+            else:
+                html_ptr.write("            <td title='This item does not have any compliance issues.'><span class='dot dot-green'></span>None</td>\n")
+
 
         html_ptr.write("            </td>\n")
 
