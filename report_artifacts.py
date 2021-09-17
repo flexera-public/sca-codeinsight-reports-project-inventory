@@ -72,7 +72,7 @@ def generate_xlsx_report(reportData):
     if len(projectList)==1:
         xlsxFile = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".xlsx"
     else:
-        xlsxFile = projectNameForFile + "-" + str(projectID)+ "-with-children-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".xlsx" 
+        xlsxFile = projectNameForFile + "-with-children-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".xlsx" 
 
     logger.debug("xlsxFile: %s" %xlsxFile)
 
@@ -620,7 +620,7 @@ def generate_html_report(reportData):
     if len(projectList)==1:
         htmlFile = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".html"
     else:
-        htmlFile = projectNameForFile + "-" + str(projectID)+ "-with-children-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".html" 
+        htmlFile = projectNameForFile + "-with-children-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".html" 
 
     logger.debug("htmlFile: %s" %htmlFile)
 
