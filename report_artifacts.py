@@ -772,7 +772,7 @@ def generate_html_report(reportData):
 
     html_ptr.write("    <thead>\n")
     html_ptr.write("        <tr>\n")
-    html_ptr.write("            <th colspan='8' class='text-center'><h4>Inventory Items</h4></th>\n") 
+    html_ptr.write("            <th colspan='9' class='text-center'><h4>Inventory Items</h4></th>\n") 
     html_ptr.write("        </tr>\n") 
     html_ptr.write("        <tr>\n")
     if len(projectList) > 1: 
