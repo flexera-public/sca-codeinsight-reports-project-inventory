@@ -14,6 +14,7 @@ import CodeInsight_RESTAPIs.project.get_child_projects
 import CodeInsight_RESTAPIs.project.get_project_information
 import CodeInsight_RESTAPIs.project.get_inventory_summary
 import CodeInsight_RESTAPIs.license.license_lookup
+import CodeInsight_RESTAPIs.component.get_component_details
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +100,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             logger.debug("    %s - %s" %(inventoryID, inventoryItemName))
             
             componentName = inventoryItem["componentName"]
+            componentID = inventoryItem["componentId"]
             inventoryPriority = inventoryItem["priority"]
             componentVersionName = inventoryItem["componentVersionName"]
             selectedLicenseID = inventoryItem["selectedLicenseId"]
@@ -183,13 +185,22 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                     reviewIssue.update( {"remediation" : "This item has a viral or strong copyleft license. Depnding on your usage there may be additional oblilgations. Please consult with your legal team.."})
                     complianceIssues.append(reviewIssue)
 
-
-                # TODO Determine if there are any issues with the version
-
                 if componentVersionName == "N/A":
                     reviewIssue = {"issue": "Unknown version"}
                     reviewIssue.update( {"remediation" : "This item has an unknown version. Additional analysis is recommended."})
                     complianceIssues.append(reviewIssue)
+                else:
+                #    Determine if there are any issues with the version
+                    componentVersionDetails = getVersionDetails(componentVersionName, componentID, baseURL, authToken)
+                    numberVersionsBack = componentVersionDetails["numberVersionsBack"]
+
+                    maxVersionsBack = 10   # TODO Create report option for this value
+                    if numberVersionsBack >= maxVersionsBack:
+                        latestVersion = componentVersionDetails["latestVersion"]
+                        reviewIssue = {"issue": "Old version"}
+                        reviewIssue.update( {"remediation" : "The latest version is " + latestVersion + ". Your version is " + str(numberVersionsBack) + " versions back from the latest version. You should consider upgrading to a more recent version of this component."})
+                        complianceIssues.append(reviewIssue)
+
 
             # Store the data for the inventory item for reporting
             inventoryData[inventoryID] = {
@@ -350,6 +361,54 @@ def create_application_summary_data_dict(projectSummaryData):
 
     logger.debug("Exiting get_application_summary_data")
     return applicationSummaryData
+
+#----------------------------------------------------------------------------------------#
+def getVersionDetails(componentVersionName, componentID, baseURL, authToken):
+    logger.debug("Entering getVersionDetails")
+
+    componentVersionDetails = {}
+
+    # Is it a valid component
+    if componentID == "N/A":
+        return componentVersionDetails
+
+    versionDetails = CodeInsight_RESTAPIs.component.get_component_details.get_component_details_v3_summary(baseURL, componentID, authToken)
+
+    componentVersionList = versionDetails["data"]["versionList"]
+
+    logger.debug("Component contains %s versions." %len(componentVersionList))
+
+    # Are there any versions?
+    if not len(componentVersionList):
+        return componentVersionDetails
+
+    componentVersions = [] # To hold just the version names that can be processed
+    ignoreVersions = ["unknown", "custom", "any version", "sample"]
+
+    # Extract just the version names for comparison purposes
+    for version in componentVersionList:
+        versionName = version["name"]
+
+        if versionName.lower() not in ignoreVersions:
+            componentVersions.append(versionName)
+
+    
+    componentVersions = sorted(componentVersions)
+    
+    totalNumberVersions = len(componentVersions)
+    selectedVersionIndex = componentVersions.index(componentVersionName)
+
+    numberVersionsBack = totalNumberVersions-selectedVersionIndex+1 # How far back from most recent release
+
+    componentVersionDetails["currentVersion"] = componentVersionName
+    componentVersionDetails["latestVersion"] = componentVersions[-1]
+    componentVersionDetails["numberVersionsBack"] = numberVersionsBack
+  
+    logger.debug("componentVersionDetails: %s" %componentVersionDetails)    
+
+    return componentVersionDetails
+
+
 
 
 
