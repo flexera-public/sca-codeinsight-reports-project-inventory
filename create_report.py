@@ -135,6 +135,7 @@ def verifyOptions(reportOptions):
 
 	includeChildProjects = reportOptions["includeChildProjects"]
 	includeComplianceInformation = reportOptions["includeComplianceInformation"]
+	maxVersionsBack = reportOptions["maxVersionsBack"]
 	cvssVersion = reportOptions["cvssVersion"]
 
 	if includeChildProjects.lower() in trueOptions:
@@ -150,6 +151,12 @@ def verifyOptions(reportOptions):
 		reportOptions["includeComplianceInformation"] = False
 	else:
 		reportOptions["errorMsg"].append("Invalid option for including compliance information: <b>%s</b>.  Valid options are <b>True/False</b>" %includeComplianceInformation)
+
+	if maxVersionsBack.isdigit ():
+		reportOptions["maxVersionsBack"] = maxVersionsBack
+	else:
+		reportOptions["errorMsg"].append("Invalid value for the maximun number of versions from the most recent: <b>%s</b>.  An postive interger number is required" %maxVersionsBack)
+
 
 	if cvssVersion.startswith("2"):
 		reportOptions["cvssVersion"] = "2.0"

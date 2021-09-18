@@ -67,13 +67,23 @@ reportOption["order"] = "2"
 reportOptions.append(reportOption)
 
 reportOption = {}
+reportOption["name"] = "maxVersionsBack"
+reportOption["label"] = "Maxium number of newer versions? (Integer Number)"
+reportOption["description"] = "How many versions behind the most recent release of a component is allowable for compliance?"
+reportOption["type"] = "string"
+reportOption["defaultValue"] = "10"
+reportOption["required"] = "true"
+reportOption["order"] = "3"
+reportOptions.append(reportOption)
+
+reportOption = {}
 reportOption["name"] = "cvssVersion"
 reportOption["label"] = "CVSS Version (2.0/3.x)"
 reportOption["description"] = "What version of CVSS scoring to report on? <b>(2.0/3.x)</b>"
 reportOption["type"] = "string"
 reportOption["defaultValue"] = "3.x"
 reportOption["required"] = "true"
-reportOption["order"] = "3"
+reportOption["order"] = "4"
 reportOptions.append(reportOption)
 
 

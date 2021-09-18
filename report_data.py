@@ -26,6 +26,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     includeChildProjects = reportOptions["includeChildProjects"]  # True/False
     includeComplianceInformation = reportOptions["includeComplianceInformation"]  # True/False
     cvssVersion = reportOptions["cvssVersion"]  # 2.0/3.x
+    maxVersionsBack = reportOptions["maxVersionsBack"]  # Postive Int value
 
     projectList = [] # List to hold parent/child details for report
     inventoryData = {}  # Create a dictionary containing the inventory data using inventoryID as keys
@@ -194,8 +195,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                     componentVersionDetails = getVersionDetails(componentVersionName, componentID, baseURL, authToken)
                     numberVersionsBack = componentVersionDetails["numberVersionsBack"]
 
-                    maxVersionsBack = 10   # TODO Create report option for this value
-                    if numberVersionsBack >= maxVersionsBack:
+                    if int(numberVersionsBack) >= int(maxVersionsBack):
                         latestVersion = componentVersionDetails["latestVersion"]
                         reviewIssue = {"issue": "Old version"}
                         reviewIssue.update( {"remediation" : "The latest version is " + latestVersion + ". Your version is " + str(numberVersionsBack) + " versions back from the latest version. You should consider upgrading to a more recent version of this component."})
