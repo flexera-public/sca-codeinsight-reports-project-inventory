@@ -50,6 +50,7 @@ def generate_xlsx_report(reportData):
     projectHierarchy = reportData["projectHierarchy"]
     
     cvssVersion = projectSummaryData["cvssVersion"]  # 2.0/3.x
+    includeComplianceInformation = projectSummaryData["includeComplianceInformation"]  # True/False
 
     # Colors for report
     reveneraGray = '#323E48'
@@ -189,6 +190,14 @@ def generate_xlsx_report(reportData):
     draftCellFormat.set_align('center')
     draftCellFormat.set_align('vcenter')
     draftCellFormat.set_border()
+
+    complianceCellFormat = workbook.add_format()
+    complianceCellFormat.set_text_wrap()
+    complianceCellFormat.set_font_color(rejectedColor)
+    complianceCellFormat.set_align('vcenter')
+    complianceCellFormat.set_font_size('10')
+    complianceCellFormat.set_border()
+
 
     # Populate the summary data for the charts
     dataWorksheet.write('A3', "Application Summary")
@@ -483,6 +492,11 @@ def generate_xlsx_report(reportData):
     tableHeaders.append("REVIEW STATUS")
     column+=1
 
+    if includeComplianceInformation:
+        detailsWorksheet.set_column(column, column, 80)  # Compliance Information
+        tableHeaders.append("COMPLIANCE INFORMATION")
+        column+=1
+
     detailsWorksheet.write_row(row, 0, tableHeaders, tableHeaderFormat)
     row+=1
 
@@ -504,6 +518,7 @@ def generate_xlsx_report(reportData):
         inventoryReviewStatus = inventoryData[inventoryID]["inventoryReviewStatus"]
         inventoryLink = inventoryData[inventoryID]["inventoryLink"]
         projectLink = inventoryData[inventoryID]["projectLink"]
+        complianceIssues = inventoryData[inventoryID]["complianceIssues"]
 
        
         # Now write each cell
@@ -542,8 +557,18 @@ def generate_xlsx_report(reportData):
             detailsWorksheet.write(row, column, inventoryReviewStatus, rejectedCellFormat)
         else:
             detailsWorksheet.write(row, column, inventoryReviewStatus, draftCellFormat)
-
         column+=1
+
+        if includeComplianceInformation:
+            complianceString = ""
+            for issue in complianceIssues:
+                complianceString += issue["issue"]  + "  -  " +issue["remediation"]  +  "\n"
+
+            complianceString=complianceString[:-2]
+
+            detailsWorksheet.write(row, column, complianceString, complianceCellFormat)
+            column+=1
+
         row+=1
 
     # Automatically create the filter sort options
