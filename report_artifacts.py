@@ -560,13 +560,19 @@ def generate_xlsx_report(reportData):
         column+=1
 
         if includeComplianceInformation:
-            complianceString = ""
-            for issue in complianceIssues:
-                complianceString += issue["issue"]  + "  -  " +issue["remediation"]  +  "\n"
+            if len(complianceIssues):
+                complianceString = ""
+                for issue in complianceIssues:
+                    complianceString += issue["issue"]  + "  -  " +issue["remediation"]  +  "\n"
 
-            complianceString=complianceString[:-2]
+                complianceString=complianceString[:-2]
 
-            detailsWorksheet.write(row, column, complianceString, complianceCellFormat)
+                detailsWorksheet.write(row, column, complianceString, complianceCellFormat)
+
+            else:
+                detailsWorksheet.write(row, column, "None", cellFormat)
+
+
             column+=1
 
         row+=1
