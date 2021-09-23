@@ -92,7 +92,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
         for inventoryItem in projectInventorySummary:
             currentItem +=1
 
-            complianceIssues = []
+            complianceIssues = {}
 
             inventoryID = inventoryItem["id"]
             inventoryItemName = inventoryItem["name"]
@@ -165,31 +165,23 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                 
                 # Check review status
                 if inventoryReviewStatus == "Rejected":
-                    reviewIssue = {"issue": "Item rejected"}
-                    reviewIssue.update( {"remediation" : "This item has been rejected for use. Please consult with your legal and/or security team for further guidance."})
-                    complianceIssues.append(reviewIssue)
-
+                    complianceIssues["Item rejected"] = "This item has been rejected for use. Please consult with your legal and/or security team for further guidance."
                 elif inventoryReviewStatus == "Draft":
-                    reviewIssue = {"issue": "Item not reviewed"}
-                    reviewIssue.update( {"remediation" : "This item has not been reviewed for use. Please consult with your legal and/or security team for further guidance."})
-                    complianceIssues.append(reviewIssue)
+                    complianceIssues["Item not reviewed"] =  "This item has not been reviewed for use. Please consult with your legal and/or security team for further guidance."
+
 
                 # Check if there is vulnerability data
                 if sum(vulnerabilityData.values()) > 0:
-                    reviewIssue = {"issue": "Security vulnerabilities"}
-                    reviewIssue.update( {"remediation" : "This item has associated security vulnerabilites. Please consult with your security team for further guidance."})
-                    complianceIssues.append(reviewIssue)
+                    complianceIssues["Security vulnerabilities"] = "This item has associated security vulnerabilites. Please consult with your security team for further guidance."
 
+                
                 # License compliance issue
                 if selectedLicensePriority == 1:
-                    reviewIssue = {"issue": "P1 license"}
-                    reviewIssue.update( {"remediation" : "This item has a viral or strong copyleft license. Depnding on your usage there may be additional oblilgations. Please consult with your legal team.."})
-                    complianceIssues.append(reviewIssue)
+                    complianceIssues["P1 license"] = "This item has a viral or strong copyleft license. Depnding on your usage there may be additional oblilgations. Please consult with your legal team.."
 
+                # Component version compliance issue
                 if componentVersionName == "N/A":
-                    reviewIssue = {"issue": "Unknown version"}
-                    reviewIssue.update( {"remediation" : "This item has an unknown version. Additional analysis is recommended."})
-                    complianceIssues.append(reviewIssue)
+                    complianceIssues["Unknown version"] = "This item has an unknown version. Additional analysis is recommended."
                 else:
                 #    Determine if there are any issues with the version
                     componentVersionDetails = getVersionDetails(componentVersionName, componentID, baseURL, authToken)
@@ -197,10 +189,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
 
                     if int(numberVersionsBack) >= int(maxVersionsBack):
                         latestVersion = componentVersionDetails["latestVersion"]
-                        reviewIssue = {"issue": "Old version"}
-                        reviewIssue.update( {"remediation" : "The latest version is " + latestVersion + ". Your version is " + str(numberVersionsBack) + " versions back from the latest version. You should consider upgrading to a more recent version of this component."})
-                        complianceIssues.append(reviewIssue)
-
+                        complianceIssues["Old version"] = "The latest version is " + latestVersion + ". Your version is " + str(numberVersionsBack) + " versions back from the latest version. You should consider upgrading to a more recent version of this component."
 
             # Store the data for the inventory item for reporting
             inventoryData[inventoryID] = {

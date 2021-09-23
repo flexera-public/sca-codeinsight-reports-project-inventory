@@ -533,8 +533,14 @@ def generate_xlsx_report(reportData):
         column+=1
         detailsWorksheet.write(row, column, componentName, cellFormat)
         column+=1
-        detailsWorksheet.write(row, column, componentVersionName, cellFormat)
+
+        # Highlight the version if it is old
+        if "Old version" in complianceIssues.keys():
+            detailsWorksheet.write(row, column, componentVersionName, rejectedCellFormat)
+        else:
+            detailsWorksheet.write(row, column, componentVersionName, cellFormat)
         column+=1
+
         detailsWorksheet.write(row, column, selectedLicenseName, cellFormat)
         column+=1
 
@@ -563,18 +569,13 @@ def generate_xlsx_report(reportData):
             if len(complianceIssues):
                 complianceString = ""
                 for issue in complianceIssues:
-                    complianceString += issue["issue"]  + "  -  " +issue["remediation"]  +  "\n"
-
-                complianceString=complianceString[:-2]
-
+                    complianceString += issue + "  -  " + complianceIssues[issue] +  "\n"
+                complianceString=complianceString[:-2]  # Remove the last newline
                 detailsWorksheet.write(row, column, complianceString, complianceCellFormat)
-
             else:
                 detailsWorksheet.write(row, column, "None", cellFormat)
 
-
             column+=1
-
         row+=1
 
     # Automatically create the filter sort options
@@ -881,7 +882,13 @@ def generate_html_report(reportData):
 
         
         html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(componentUrl, componentName))
-        html_ptr.write("            <td class='text-left'>%s</td>\n" %(componentVersionName))
+
+        # Highlight the version if it is old
+        if "Old version" in complianceIssues.keys():
+            html_ptr.write("<td class='text-left' style='color:red;'><span title='%s'>%s</span></td>\n" %(complianceIssues["Old version"], componentVersionName))
+        else:
+            html_ptr.write("            <td class='text-left'>%s</td>\n" %(componentVersionName))
+
         html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(selectedLicenseUrl, selectedLicenseName))
        
         # Write in single line to remove spaces between btn spans
@@ -912,8 +919,8 @@ def generate_html_report(reportData):
         if includeComplianceInformation:
             if len(complianceIssues):
                 html_ptr.write("            <td class='text-left text-nowrap'>")
-                for complianceIssue in complianceIssues:
-                    html_ptr.write("<span class='dot dot-red'></span><span title='%s'>%s</span><br/>\n" %(complianceIssue["remediation"], complianceIssue["issue"]))
+                for issue in complianceIssues:
+                    html_ptr.write("<span class='dot dot-red'></span><span title='%s'>%s</span><br/>\n" %(complianceIssues[issue], issue))
                 html_ptr.write("</td>\n")
             else:
                 html_ptr.write("            <td title='This item does not have any compliance issues.'><span class='dot dot-green'></span>None</td>\n")
