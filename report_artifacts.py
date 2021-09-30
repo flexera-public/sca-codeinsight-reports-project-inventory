@@ -15,6 +15,7 @@ import base64
 import re
 import xlsxwriter
 
+import _version
 
 logger = logging.getLogger(__name__)
 
@@ -199,66 +200,69 @@ def generate_xlsx_report(reportData):
     complianceCellFormat.set_border()
 
 
+    dataWorksheet.merge_range('B1:F1', "Report Gernerated: %s" %(datetime.now().strftime("%B %d, %Y at %H:%M:%S")))
+    dataWorksheet.merge_range('B2:F2', "Report Version: %s" %_version.__version__)
+
     # Populate the summary data for the charts
-    dataWorksheet.write('A3', "Application Summary")
-    dataWorksheet.write_column('A4', projectSummaryData["projectNames"])
+    dataWorksheet.write('A8', "Application Summary")
+    dataWorksheet.write_column('A9', projectSummaryData["projectNames"])
 
-    dataWorksheet.merge_range('B1:E1', 'License Summary', tableHeaderFormat)
+    dataWorksheet.merge_range('B6:E6', 'License Summary', tableHeaderFormat)
     
-    dataWorksheet.write('B2', "P1 Licenses")
-    dataWorksheet.write('B3', applicationSummaryData["numP1Licenses"])
-    dataWorksheet.write_column('B4', projectSummaryData["numP1Licenses"])  
+    dataWorksheet.write('B7', "P1 Licenses")
+    dataWorksheet.write('B8', applicationSummaryData["numP1Licenses"])
+    dataWorksheet.write_column('B9', projectSummaryData["numP1Licenses"])  
 
-    dataWorksheet.write('C2', "P2 Licenses")
-    dataWorksheet.write('C3', applicationSummaryData["numP2Licenses"])
-    dataWorksheet.write_column('C4', projectSummaryData["numP2Licenses"])  
+    dataWorksheet.write('C7', "P2 Licenses")
+    dataWorksheet.write('C8', applicationSummaryData["numP2Licenses"])
+    dataWorksheet.write_column('C9', projectSummaryData["numP2Licenses"])  
 
-    dataWorksheet.write('D2', "P3 Licenses")
-    dataWorksheet.write('D3', applicationSummaryData["numP3Licenses"])
-    dataWorksheet.write_column('D4', projectSummaryData["numP3Licenses"]) 
+    dataWorksheet.write('D7', "P3 Licenses")
+    dataWorksheet.write('D8', applicationSummaryData["numP3Licenses"])
+    dataWorksheet.write_column('D9', projectSummaryData["numP3Licenses"]) 
 
-    dataWorksheet.write('E2', "NA Licenses")
-    dataWorksheet.write('E3', applicationSummaryData["numNALicenses"])
-    dataWorksheet.write_column('E4', projectSummaryData["numNALicenses"]) 
+    dataWorksheet.write('E7', "NA Licenses")
+    dataWorksheet.write('E8', applicationSummaryData["numNALicenses"])
+    dataWorksheet.write_column('E9', projectSummaryData["numNALicenses"]) 
 
-    dataWorksheet.merge_range('F1:J1', 'Vulnerabilities', tableHeaderFormat)
+    dataWorksheet.merge_range('F6:J6', 'Vulnerabilities', tableHeaderFormat)
 
     if cvssVersion == "3.x": 
-        dataWorksheet.write('F2', "Critical")
-        dataWorksheet.write('F3', applicationSummaryData["numCriticalVulnerabilities"])
-        dataWorksheet.write_column('F4', projectSummaryData["numCriticalVulnerabilities"])  
+        dataWorksheet.write('F7', "Critical")
+        dataWorksheet.write('F8', applicationSummaryData["numCriticalVulnerabilities"])
+        dataWorksheet.write_column('F9', projectSummaryData["numCriticalVulnerabilities"])  
 
-    dataWorksheet.write('G2', "High")
-    dataWorksheet.write('G3', applicationSummaryData["numHighVulnerabilities"])
-    dataWorksheet.write_column('G4', projectSummaryData["numHighVulnerabilities"])  
+    dataWorksheet.write('G7', "High")
+    dataWorksheet.write('G8', applicationSummaryData["numHighVulnerabilities"])
+    dataWorksheet.write_column('G9', projectSummaryData["numHighVulnerabilities"])  
 
-    dataWorksheet.write('H2', "Medium")
-    dataWorksheet.write('H3', applicationSummaryData["numMediumVulnerabilities"])
-    dataWorksheet.write_column('H4', projectSummaryData["numMediumVulnerabilities"])  
+    dataWorksheet.write('H7', "Medium")
+    dataWorksheet.write('H8', applicationSummaryData["numMediumVulnerabilities"])
+    dataWorksheet.write_column('H9', projectSummaryData["numMediumVulnerabilities"])  
 
-    dataWorksheet.write('I2', "Low")
-    dataWorksheet.write('I3', applicationSummaryData["numLowVulnerabilities"])
-    dataWorksheet.write_column('I4', projectSummaryData["numLowVulnerabilities"])  
+    dataWorksheet.write('I7', "Low")
+    dataWorksheet.write('I8', applicationSummaryData["numLowVulnerabilities"])
+    dataWorksheet.write_column('I9', projectSummaryData["numLowVulnerabilities"])  
 
-    dataWorksheet.write('J2', "None")
-    dataWorksheet.write('J3', applicationSummaryData["numNoneVulnerabilities"])
-    dataWorksheet.write_column('J4', projectSummaryData["numNoneVulnerabilities"])  
+    dataWorksheet.write('J7', "None")
+    dataWorksheet.write('J8', applicationSummaryData["numNoneVulnerabilities"])
+    dataWorksheet.write_column('J9', projectSummaryData["numNoneVulnerabilities"])  
 
-    dataWorksheet.merge_range('K1:M1', 'Review Status', tableHeaderFormat)
+    dataWorksheet.merge_range('K6:M6', 'Review Status', tableHeaderFormat)
 
-    dataWorksheet.write('K2', "Approved")
-    dataWorksheet.write('K3', applicationSummaryData["numApproved"])
-    dataWorksheet.write_column('K4', projectSummaryData["numApproved"])  
+    dataWorksheet.write('K7', "Approved")
+    dataWorksheet.write('K8', applicationSummaryData["numApproved"])
+    dataWorksheet.write_column('K9', projectSummaryData["numApproved"])  
 
-    dataWorksheet.write('L2', "Rejected")
-    dataWorksheet.write('L3', applicationSummaryData["numRejected"])
-    dataWorksheet.write_column('L4', projectSummaryData["numRejected"])  
+    dataWorksheet.write('L7', "Rejected")
+    dataWorksheet.write('L8', applicationSummaryData["numRejected"])
+    dataWorksheet.write_column('L9', projectSummaryData["numRejected"])  
 
-    dataWorksheet.write('M2', "Draft")
-    dataWorksheet.write('M3', applicationSummaryData["numDraft"])
-    dataWorksheet.write_column('M4', projectSummaryData["numDraft"])  
+    dataWorksheet.write('M7', "Draft")
+    dataWorksheet.write('M8', applicationSummaryData["numDraft"])
+    dataWorksheet.write_column('M9', projectSummaryData["numDraft"])  
 
-    catagoryHeaderRow = 1
+    catagoryHeaderRow = 6
     defaultChartWidth = 700
     summaryChartHeight = 150
 
@@ -278,7 +282,7 @@ def generate_xlsx_report(reportData):
 
 
         # Create the charts now
-        applicationSummaryRow = 2  
+        applicationSummaryRow = 7  
         
         applicationLicenseSummaryChart = workbook.add_chart({'type': 'bar', 'subtype': 'stacked'})
         applicationLicenseSummaryChart.set_title({'name': 'Application License Summary'})
@@ -348,7 +352,7 @@ def generate_xlsx_report(reportData):
         reviewSummaryWorksheet.insert_chart('AA2', applicationReviewStatusSummaryChart)
 
     # Now print the project level data
-    projectDataStartRow = 3 
+    projectDataStartRow = 8 
     
     projectLicenseSummaryChart = workbook.add_chart({'type': 'bar', 'subtype': 'stacked'})
 
@@ -950,6 +954,8 @@ def generate_html_report(reportData):
     html_ptr.write("<div class='report-footer'>\n")
     html_ptr.write("  <div style='float:left'>&copy; %s Flexera</div>\n" %fileNameTimeStamp[0:4])
     html_ptr.write("  <div style='float:right'>Generated on %s</div>\n" %now)
+    html_ptr.write("<br>\n")
+    html_ptr.write("  <div style='float:right'>Report Version: %s</div>\n" %_version.__version__)
     html_ptr.write("</div>\n")
     html_ptr.write("<!-- END FOOTER -->\n")   
 
