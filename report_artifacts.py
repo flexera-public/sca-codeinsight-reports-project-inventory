@@ -643,9 +643,6 @@ def generate_html_report(reportData):
     #  Encode the image files
     encodedLogoImage = encodeImage(logoImageFile)
     encodedfaviconImage = encodeImage(iconFile)
-    encodedStatusApprovedIcon = encodeImage(statusApprovedIcon)
-    encodedStatusRejectedIcon = encodeImage(statusRejectedIcon)
-    encodedStatusDraftIcon = encodeImage(statusDraftIcon)
 
     # Grab the current date/time for report date stamp
     now = datetime.now().strftime("%B %d, %Y at %H:%M:%S")
@@ -911,11 +908,11 @@ def generate_html_report(reportData):
             html_ptr.write("                <span class='btn btn-vuln btn-no-vulns'>None</span>\n")
 
         if inventoryReviewStatus == "Approved":
-            html_ptr.write("            <td class='text-left text-nowrap' style='color:green;'><img src='data:image/png;base64, %s' width='15px' height='15px' style='margin-top: -2px;'> %s</td>\n" %(encodedStatusApprovedIcon.decode('utf-8'), inventoryReviewStatus))
+            html_ptr.write("            <td class='text-left text-nowrap' style='color:green;'>%s</td>\n" %(inventoryReviewStatus))
         elif inventoryReviewStatus == "Rejected":
-            html_ptr.write("            <td class='text-left text-nowrap' style='color:red;'><img src='data:image/png;base64, %s' width='15px' height='15px' style='margin-top: -2px;'> %s</td>\n" %(encodedStatusRejectedIcon.decode('utf-8'), inventoryReviewStatus))
+            html_ptr.write("            <td class='text-left text-nowrap' style='color:red;'>%s</td>\n" %(inventoryReviewStatus))
         elif inventoryReviewStatus == "Draft":
-            html_ptr.write("            <td class='text-left text-nowrap' style='color:gray;'><img src='data:image/png;base64, %s' width='15px' height='15px' style='margin-top: -2px;'> %s</td>\n" %(encodedStatusDraftIcon.decode('utf-8'), inventoryReviewStatus))
+            html_ptr.write("            <td class='text-left text-nowrap' style='color:gray;'>%s</td>\n" %(inventoryReviewStatus))
         else:
             html_ptr.write("            <td class='text-left text-nowrap'>%s</td>\n" %(inventoryReviewStatus))
 
