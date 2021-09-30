@@ -540,6 +540,11 @@ def generate_xlsx_report(reportData):
             cellComment = "Old Version - " + complianceIssues["Old version"]
             detailsWorksheet.write_comment(row, column, cellComment, {'width' : 400, 'height' : 30})
 
+        elif "Version not analyzed" in complianceIssues.keys():
+            detailsWorksheet.write(row, column, componentVersionName, rejectedCellFormat)
+            cellComment = "Version not analyzed - " + complianceIssues["Version not analyzed"]
+            detailsWorksheet.write_comment(row, column, cellComment, {'width' : 400, 'height' : 30})
+
         else:
             detailsWorksheet.write(row, column, componentVersionName, cellFormat)
         column+=1
@@ -886,6 +891,8 @@ def generate_html_report(reportData):
         # Highlight the version if it is old
         if "Old version" in complianceIssues.keys():
             html_ptr.write("<td class='text-left' style='color:red;'><span title='%s'>%s</span></td>\n" %(complianceIssues["Old version"], componentVersionName))
+        elif "Version not analyzed" in complianceIssues.keys():
+            html_ptr.write("<td class='text-left' style='color:red;'><span title='%s'>%s</span></td>\n" %(complianceIssues["Version not analyzed"], componentVersionName))
         else:
             html_ptr.write("            <td class='text-left'>%s</td>\n" %(componentVersionName))
 
