@@ -22,6 +22,7 @@ This repository utilizes the following via CDN for the creation of the report ar
 |2.2.x |2021R1  |
 |3.0.x |2021R2  |
 |4.0.x |2021R2  |
+|5.0.x |2021R2  |
 
 **Repository Cloning**
 
