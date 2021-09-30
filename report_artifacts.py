@@ -537,6 +537,9 @@ def generate_xlsx_report(reportData):
         # Highlight the version if it is old
         if "Old version" in complianceIssues.keys():
             detailsWorksheet.write(row, column, componentVersionName, rejectedCellFormat)
+            cellComment = "Old Version - " + complianceIssues["Old version"]
+            detailsWorksheet.write_comment(row, column, cellComment, {'width' : 400, 'height' : 30})
+
         else:
             detailsWorksheet.write(row, column, componentVersionName, cellFormat)
         column+=1
