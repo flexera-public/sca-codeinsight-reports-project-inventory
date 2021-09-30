@@ -183,13 +183,19 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                 if componentVersionName == "N/A":
                     complianceIssues["Unknown version"] = "This item has an unknown version. Additional analysis is recommended."
                 else:
-                #    Determine if there are any issues with the version
-                    componentVersionDetails = getVersionDetails(componentVersionName, componentID, baseURL, authToken)
-                    numberVersionsBack = componentVersionDetails["numberVersionsBack"]
+                    if componentID == "55720":  # Is it the linux kernel?
+                        # The API call for the versions of linux takes a long time due to teh massive number of versions so bypass
+                        logger.debug("Linux kernel so skipping version analysis")
+                        complianceIssues["Version not analyzed"] = "This versions for this component have not beeen analyzed. Manual inspection is suggested"
+                    else:
+                    #    Determine if there are any issues with the version
+                        componentVersionDetails = getVersionDetails(componentVersionName, componentID, baseURL, authToken)
+                        numberVersionsBack = componentVersionDetails["numberVersionsBack"]
 
-                    if int(numberVersionsBack) >= int(maxVersionsBack):
-                        latestVersion = componentVersionDetails["latestVersion"]
-                        complianceIssues["Old version"] = "The latest version is " + latestVersion + ". Your version is " + str(numberVersionsBack) + " versions back from the latest version. You should consider upgrading to a more recent version of this component."
+                        if int(numberVersionsBack) >= int(maxVersionsBack):
+                            latestVersion = componentVersionDetails["latestVersion"]
+                            complianceIssues["Old version"] = "The latest version is " + latestVersion + ". Your version is " + str(numberVersionsBack) + " versions back from the latest version. You should consider upgrading to a more recent version of this component."
+ 
 
             # Store the data for the inventory item for reporting
             inventoryData[inventoryID] = {
