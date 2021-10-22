@@ -200,7 +200,7 @@ def generate_xlsx_report(reportData):
     complianceCellFormat.set_border()
 
 
-    dataWorksheet.merge_range('B1:F1', "Report Gernerated: %s" %(datetime.now().strftime("%B %d, %Y at %H:%M:%S")))
+    dataWorksheet.merge_range('B1:F1', "Report Generated: %s" %(datetime.now().strftime("%B %d, %Y at %H:%M:%S")))
     dataWorksheet.merge_range('B2:F2', "Report Version: %s" %_version.__version__)
 
     # Populate the summary data for the charts
