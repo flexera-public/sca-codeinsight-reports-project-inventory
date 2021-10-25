@@ -13,24 +13,16 @@ This repository utilizes the following via CDN for the creation of the report ar
 
 **Code Insight Release Requirements**
 
+
 |Repository Tag | Minimum Code Insight Release |
-
 |--|--|
-
 |1.0.x |2020R3 |
-
 |2.0.x |2020R3 |
-
 |2.1.x |2020R4 |
-
 |2.2.x |2021R1 |
-
 |3.0.x |2021R2 |
-
 |4.0.x |2021R2 |
-
 |5.0.x |2021R2 |
-
 |6.0.x |2021R4 |
 
 **Repository Cloning**
