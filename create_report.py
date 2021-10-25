@@ -32,13 +32,13 @@ else:
     pass
 
 propertiesFile = "../core.server.properties"  # Created by installer or manually
+baseURL = "http://localhost:8888"   # Required if the core.server.properties files is not used
 logfileName = os.path.dirname(os.path.realpath(__file__)) + "/_project_inventory_report.log"
 
 ###################################################################################
 #  Set up logging handler to allow for different levels of logging to be capture
 logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', datefmt='%Y-%m-%d:%H:%M:%S', filename=logfileName, filemode='w',level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
 
 ####################################################################################
 # Create command line argument options
@@ -47,7 +47,6 @@ parser.add_argument('-pid', "--projectID", help="Project ID")
 parser.add_argument("-rid", "--reportID", help="Report ID")
 parser.add_argument("-authToken", "--authToken", help="Code Insight Authorization Token")
 parser.add_argument("-reportOpts", "--reportOptions", help="Options for report content")
-
 
 #----------------------------------------------------------------------#
 def main():
@@ -81,8 +80,7 @@ def main():
 		file_ptr.close()
 		logger.info("Using baseURL from properties file: %s" %propertiesFile)
 	except:
-		baseURL = "http://localhost:8888"
-		logger.info("Using baseURL from create_report.py")
+		logger.info("Using baseURL, %s,  from create_report.py" %baseURL)
 
 
 	reportOptions = json.loads(reportOptions)
