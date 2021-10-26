@@ -195,6 +195,9 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                         if int(numberVersionsBack) >= int(maxVersionsBack):
                             latestVersion = componentVersionDetails["latestVersion"]
                             complianceIssues["Old version"] = "The latest version is " + latestVersion + ". Your version is " + str(numberVersionsBack) + " versions back from the latest version. You should consider upgrading to a more recent version of this component."
+                        elif numberVersionsBack == -1:
+                            complianceIssues["Invalid Version"] = componentVersionName + " is not a valid version for the current component." 
+                            
  
 
             # Store the data for the inventory item for reporting
@@ -389,9 +392,14 @@ def getVersionDetails(componentVersionName, componentID, baseURL, authToken):
     componentVersions = sorted(componentVersions)
     
     totalNumberVersions = len(componentVersions)
-    selectedVersionIndex = componentVersions.index(componentVersionName)
 
-    numberVersionsBack = totalNumberVersions-selectedVersionIndex+1 # How far back from most recent release
+    try:
+        selectedVersionIndex = componentVersions.index(componentVersionName)
+        numberVersionsBack = totalNumberVersions-selectedVersionIndex+1 # How far back from most recent release
+    except:
+        logger.error("    versionName %s is not a valid version for the component with ID %s" %(componentVersionName, componentID))
+        numberVersionsBack = -1
+    
 
     componentVersionDetails["currentVersion"] = componentVersionName
     componentVersionDetails["latestVersion"] = componentVersions[-1]

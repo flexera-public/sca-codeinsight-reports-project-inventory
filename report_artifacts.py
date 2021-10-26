@@ -538,7 +538,7 @@ def generate_xlsx_report(reportData):
         detailsWorksheet.write(row, column, componentName, cellFormat)
         column+=1
 
-        # Highlight the version if it is old
+        # Highlight the version if it is old, not analyzed or invalid.
         if "Old version" in complianceIssues.keys():
             detailsWorksheet.write(row, column, componentVersionName, rejectedCellFormat)
             cellComment = "Old Version - " + complianceIssues["Old version"]
@@ -547,6 +547,11 @@ def generate_xlsx_report(reportData):
         elif "Version not analyzed" in complianceIssues.keys():
             detailsWorksheet.write(row, column, componentVersionName, rejectedCellFormat)
             cellComment = "Version not analyzed - " + complianceIssues["Version not analyzed"]
+            detailsWorksheet.write_comment(row, column, cellComment, {'width' : 400, 'height' : 30})
+
+        elif "Invalid Version" in complianceIssues.keys():
+            detailsWorksheet.write(row, column, componentVersionName, rejectedCellFormat)
+            cellComment = "Invalid Version - " + complianceIssues["Invalid Version"]
             detailsWorksheet.write_comment(row, column, cellComment, {'width' : 400, 'height' : 30})
 
         else:
@@ -884,11 +889,13 @@ def generate_html_report(reportData):
         
         html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(componentUrl, componentName))
 
-        # Highlight the version if it is old
+        # Highlight the version if it is old, not analyzed or invalid.
         if "Old version" in complianceIssues.keys():
             html_ptr.write("<td class='text-left' style='color:red;'><span title='%s'>%s</span></td>\n" %(complianceIssues["Old version"], componentVersionName))
         elif "Version not analyzed" in complianceIssues.keys():
             html_ptr.write("<td class='text-left' style='color:red;'><span title='%s'>%s</span></td>\n" %(complianceIssues["Version not analyzed"], componentVersionName))
+        elif "Invalid Version "  in complianceIssues.keys():
+            html_ptr.write("<td class='text-left' style='color:red;'><span title='%s'>%s</span></td>\n" %(complianceIssues["Invalid Version"], componentVersionName))
         else:
             html_ptr.write("            <td class='text-left'>%s</td>\n" %(componentVersionName))
 
