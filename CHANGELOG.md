@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.2] - 2021-10-26
+### Added
+- Update name of common config file to reflect it is a json file vs a prop file
+- Improved logging for collecting data and creating artifacts
+- Invalid version support for compliance
+
 ## [6.0.1] - 2021-10-25
 ### Added
 - First release to support installer based installation of reports
