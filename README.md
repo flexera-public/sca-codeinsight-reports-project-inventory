@@ -44,7 +44,7 @@ The required python modules can be installed with the use of the [requirements.t
 
 ## Configuration and Report Registration
  
-For registration purposes the file **core.server.properties** should be ceated and located in the **$CODEINSIGHT_INSTALLDIR/custom_report_scripts/** directory.  This file contains a json with information required to register the report within Code Insight as shown  here:
+For registration purposes the file **server_properties.json** should be ceated and located in the **$CODEINSIGHT_INSTALLDIR/custom_report_scripts/** directory.  This file contains a json with information required to register the report within Code Insight as shown  here:
 
 >     {
 >         "core.server.url": "http://localhost:8888" ,
@@ -53,7 +53,7 @@ For registration purposes the file **core.server.properties** should be ceated a
 
 The value for core.server.url is also used within [create_report.py](create_report.py) for any project or inventory based links back to the Code Insight server within a generated report.
 
-If the common **core.server.properties** files is not used then the information the the following files will need to be updated:
+If the common **server_properties.json** files is not used then the information the the following files will need to be updated:
 
 [registration.py](registration.py)  -  Update the **baseURL** and **adminAuthToken** values. These settings allow the report itself to be registered on the Code Insight server.
 

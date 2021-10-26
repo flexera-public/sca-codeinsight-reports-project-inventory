@@ -31,7 +31,7 @@ if sys.version_info <= (3, 5):
 else:
     pass
 
-propertiesFile = "../core.server.properties"  # Created by installer or manually
+propertiesFile = "../server_properties.json"  # Created by installer or manually
 baseURL = "http://localhost:8888"   # Required if the core.server.properties files is not used
 logfileName = os.path.dirname(os.path.realpath(__file__)) + "/_project_inventory_report.log"
 

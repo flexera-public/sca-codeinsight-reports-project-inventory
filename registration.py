@@ -29,7 +29,7 @@ if sys.version_info <= (3, 5):
 else:
     pass
 
-propertiesFile = "../core.server.properties"  # Created by installer or manually
+propertiesFile = "../server_properties.json"  # Created by installer or manually
 logfileName = "_custom_report_registration.log"
 
 ###################################################################################
