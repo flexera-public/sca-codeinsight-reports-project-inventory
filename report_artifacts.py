@@ -76,7 +76,7 @@ def generate_xlsx_report(reportData):
     else:
         xlsxFile = projectNameForFile + "-with-children-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".xlsx" 
 
-    logger.debug("xlsxFile: %s" %xlsxFile)
+    logger.debug("        xlsxFile: %s" %xlsxFile)
 
     # Create the workbook/worksheet for storying the data
     workbook = xlsxwriter.Workbook(xlsxFile)
@@ -508,7 +508,7 @@ def generate_xlsx_report(reportData):
     # Cycle through the inventory to create the 
     # table with the results
     for inventoryID in sorted(inventoryData):
-        logger.debug("Reporting for inventory item %s" %inventoryID)
+        logger.debug("        Reporting for inventory item %s" %inventoryID)
 
         projectName = inventoryData[inventoryID]["projectName"]
         inventoryItemName = inventoryData[inventoryID]["inventoryItemName"]
@@ -524,7 +524,7 @@ def generate_xlsx_report(reportData):
         projectLink = inventoryData[inventoryID]["projectLink"]
         complianceIssues = inventoryData[inventoryID]["complianceIssues"]
 
-       
+        logger.debug("            Project Name:  %s   Inventory Item %s" %(projectName, inventoryItemName))
         # Now write each cell
         column=0
         if len(projectList) > 1:
@@ -618,7 +618,7 @@ def display_project_hierarchy(worksheet, parentProject, row, column, boldCellFor
 
 #------------------------------------------------------------------#
 def generate_html_report(reportData):
-    logger.info("    Entering generate_html_report")
+    logger.info("Entering generate_html_report")
 
     reportName = reportData["reportName"]
     projectName = reportData["projectName"] 
@@ -637,16 +637,6 @@ def generate_html_report(reportData):
     cssFile =  os.path.join(scriptDirectory, "html-assets/css/revenera_common.css")
     logoImageFile =  os.path.join(scriptDirectory, "html-assets/images/logo_reversed.svg")
     iconFile =  os.path.join(scriptDirectory, "html-assets/images/favicon-revenera.ico")
-    statusApprovedIcon = os.path.join(scriptDirectory, "html-assets/images/status_approved_selected.png")
-    statusRejectedIcon = os.path.join(scriptDirectory, "html-assets/images/status_rejected_selected.png")
-    statusDraftIcon = os.path.join(scriptDirectory, "html-assets/images/status_draft_ready_selected.png")
-
-    logger.debug("cssFile: %s" %cssFile)
-    logger.debug("imageFile: %s" %logoImageFile)
-    logger.debug("iconFile: %s" %iconFile)
-    logger.debug("statusApprovedIcon: %s" %statusApprovedIcon)
-    logger.debug("statusRejectedIcon: %s" %statusRejectedIcon)
-    logger.debug("statusDraftIcon: %s" %statusDraftIcon)
 
     #########################################################
     #  Encode the image files
@@ -663,7 +653,7 @@ def generate_html_report(reportData):
     else:
         htmlFile = projectNameForFile + "-with-children-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".html" 
 
-    logger.debug("htmlFile: %s" %htmlFile)
+    logger.debug("    htmlFile: %s" %htmlFile)
 
     #---------------------------------------------------------------------------------------------------
     # Create a simple HTML file to display
@@ -694,7 +684,6 @@ def generate_html_report(reportData):
     # Add the contents of the css file to the head block
     try:
         f_ptr = open(cssFile)
-        logger.debug("Adding css file details")
         for line in f_ptr:
             html_ptr.write("            %s" %line)
         f_ptr.close()
@@ -838,6 +827,9 @@ def generate_html_report(reportData):
     # Cycle through the inventory to create the 
     # table with the results
     for inventoryID in sorted(inventoryData):
+
+        logger.debug("        Reporting for inventory item %s" %inventoryID)
+
         projectName = inventoryData[inventoryID]["projectName"]
         inventoryItemName = inventoryData[inventoryID]["inventoryItemName"]
         componentName = inventoryData[inventoryID]["componentName"]
@@ -852,7 +844,7 @@ def generate_html_report(reportData):
         projectLink = inventoryData[inventoryID]["projectLink"]
         complianceIssues = inventoryData[inventoryID]["complianceIssues"]
 
-        logger.debug("Reporting for inventory item %s" %inventoryID)
+        logger.debug("            Project Name:  %s   Inventory Name %s" %(projectName, inventoryItemName))
 
         numTotalVulnerabilities = 0
         numCriticalVulnerabilities = 0

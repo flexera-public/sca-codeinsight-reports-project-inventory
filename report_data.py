@@ -64,8 +64,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
         try:
             projectInformation = CodeInsight_RESTAPIs.project.get_project_information.get_project_information_summary(baseURL, projectID, authToken)
         except:
-            logger.error("    No Project Information Returned!")
-            print("No Project Information Returned.")
+            logger.error("    No Project Information Returned for %s!" %projectName)
+            print("No Project Information Returned for %s." %projectName)
 
         # Get project summary information
         if cvssVersion == "3.x":
@@ -74,8 +74,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v2_summary(baseURL, projectID, authToken)
         
         if not projectInventorySummary:
-            logger.warning("    Project contains no inventory items")
-            print("Project contains no inventory items.")
+            logger.warning("    Project %s contains no inventory items" %projectName)
+            print("Project %s contains no inventory items." %projectName)
 
         projectInventoryCount[projectName] = len(projectInventorySummary)
 
@@ -98,7 +98,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             inventoryItemName = inventoryItem["name"]
 
             logger.debug("Processing inventory items %s of %s" %(currentItem, len(projectInventorySummary)))
-            logger.debug("    %s - %s" %(inventoryID, inventoryItemName))
+            logger.debug("    Project:  %s   Inventory Name: %s  Inventory ID: %s" %(projectName, inventoryItemName, inventoryID))
             
             componentName = inventoryItem["componentName"]
             componentID = inventoryItem["componentId"]
@@ -113,7 +113,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                 selectedLicensePriority = licenseDetails[selectedLicenseID]["selectedLicensePriority"]
             else:
                 if selectedLicenseID != "N/A":  
-                    logger.debug("Fetching license details for %s with ID %s" %(selectedLicenseName, selectedLicenseID ))
+                    logger.debug("        Fetching license details for %s with ID %s" %(selectedLicenseName, selectedLicenseID ))
                     licenseInformation = CodeInsight_RESTAPIs.license.license_lookup.get_license_details(baseURL, selectedLicenseID, authToken)
                     licenseURL = licenseInformation["url"]
                     spdxIdentifier = licenseInformation["spdxIdentifier"]
@@ -371,8 +371,6 @@ def getVersionDetails(componentVersionName, componentID, baseURL, authToken):
 
     componentVersionList = versionDetails["data"]["versionList"]
 
-    logger.debug("Component contains %s versions." %len(componentVersionList))
-
     # Are there any versions?
     if not len(componentVersionList):
         return componentVersionDetails
@@ -398,8 +396,9 @@ def getVersionDetails(componentVersionName, componentID, baseURL, authToken):
     componentVersionDetails["currentVersion"] = componentVersionName
     componentVersionDetails["latestVersion"] = componentVersions[-1]
     componentVersionDetails["numberVersionsBack"] = numberVersionsBack
+    componentVersionDetails["totalNumberVersions"] = totalNumberVersions
   
-    logger.debug("componentVersionDetails: %s" %componentVersionDetails)    
+    logger.debug("        componentVersionDetails: %s" %componentVersionDetails)    
 
     return componentVersionDetails
 
