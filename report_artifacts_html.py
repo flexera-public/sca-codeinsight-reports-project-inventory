@@ -401,7 +401,6 @@ def encodeImage(imageFile):
     # Create base64 variable for branding image
     try:
         with open(imageFile,"rb") as image:
-            logger.debug("Encoding image: %s" %imageFile)
             encodedImage = base64.b64encode(image.read())
             return encodedImage
     except:
