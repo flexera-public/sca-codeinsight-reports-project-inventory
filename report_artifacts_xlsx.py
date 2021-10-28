@@ -12,6 +12,7 @@ import logging
 from datetime import datetime
 import xlsxwriter
 
+import report_branding.xlsx.xlsx_formatting
 import _version
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,7 @@ def generate_xlsx_report(reportData, reportNameBase):
     logger.info("    Entering generate_xlsx_report")
 
     projectName = reportData["projectName"]
+    fileNameTimeStamp = reportData["fileNameTimeStamp"] 
     inventoryData = reportData["inventoryData"]
     projectList = reportData["projectList"]
     projectSummaryData = reportData["projectSummaryData"]
@@ -31,21 +33,9 @@ def generate_xlsx_report(reportData, reportNameBase):
 
     xlsxFile = reportNameBase + ".xlsx"
 
-    # Colors for report
-    reveneraGray = '#323E48'
-    white = '#FFFFFF'
-    p1LicenseColor = "#C00000"
-    p2LicenseColor = "#FFFF00"
-    p3LicenseColor= "#008000"
-    NALicenseColor = "#D3D3D3"
-    criticalVulnColor = "#400000"
-    highVulnColor = "#C00000"
-    mediumVulnColor = "#FFA500"
-    lowVulnColor = "#FFFF00"
-    noneVulnColor = "#D3D3D3"
-    approvedColor = "#008000"
-    rejectedColor = "#C00000"
-    draftColor = "#D3D3D3"
+
+
+
 
     # Create the workbook/worksheet for storying the data
     workbook = xlsxwriter.Workbook(xlsxFile)
@@ -66,110 +56,26 @@ def generate_xlsx_report(reportData, reportNameBase):
     detailsWorksheet = workbook.add_worksheet('Inventory Details') 
     dataWorksheet = workbook.add_worksheet('Chart Data')
 
-    tableHeaderFormat = workbook.add_format()
-    tableHeaderFormat.set_text_wrap()
-    tableHeaderFormat.set_bold()
-    tableHeaderFormat.set_bg_color(reveneraGray)
-    tableHeaderFormat.set_font_color(white)
-    tableHeaderFormat.set_font_size('12')
-    tableHeaderFormat.set_align('center')
-    tableHeaderFormat.set_align('vcenter')
+    # Cell formats
+    cellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.standardCellFormatProperties)
+    cellLinkFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.linkCellFormatProperties)
+    hierarchyCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.hierarchyCellFormatProperties)
+    tableHeaderFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.tableHeaderFormatProperties)
+    # Vulnerability formats
+    criticalVulnerabilityCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.criticalVulnerabilityCellFormat)
+    highVulnerabilityCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.highVulnerabilityCellFormat)
+    mediumVulnerabilityCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.mediumVulnerabilityCellFormat)
+    lowVulnerabilityCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.lowVulnerabilityCellFormat)
+    unknownVulnerabilityCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.unknownVulnerabilityCellFormat)
+    # Review formats
+    approvedCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.approvedCellFormat)
+    rejectedCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.rejectedCellFormat)
+    draftCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.draftCellFormat)
+    # Compliance format
+    complianceCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.complianceCellFormat)
+  
 
-    cellFormat = workbook.add_format()
-    cellFormat.set_text_wrap()
-    cellFormat.set_align('center')
-    cellFormat.set_align('vcenter')
-    cellFormat.set_font_size('10')
-    cellFormat.set_border()
-
-    cellLinkFormat = workbook.add_format()
-    cellLinkFormat.set_text_wrap()
-    cellLinkFormat.set_font_size('10')
-    cellLinkFormat.set_align('center')
-    cellLinkFormat.set_align('vcenter')
-    cellLinkFormat.set_font_color('blue')
-    cellLinkFormat.set_underline()
-    cellLinkFormat.set_border()
-
-    boldCellFormat = workbook.add_format()
-    boldCellFormat.set_align('vcenter')
-    boldCellFormat.set_font_size('12')
-    boldCellFormat.set_bold()
-
-    criticalVulnerabilityCellFormat = workbook.add_format()
-    criticalVulnerabilityCellFormat.set_text_wrap()
-    criticalVulnerabilityCellFormat.set_font_size('12')
-    criticalVulnerabilityCellFormat.set_align('center')
-    criticalVulnerabilityCellFormat.set_align('vcenter')
-    criticalVulnerabilityCellFormat.set_bg_color(criticalVulnColor)
-    criticalVulnerabilityCellFormat.set_font_color('white')
-    criticalVulnerabilityCellFormat.set_border()
-
-    highVulnerabilityCellFormat = workbook.add_format()
-    highVulnerabilityCellFormat.set_text_wrap()
-    highVulnerabilityCellFormat.set_font_size('12')
-    highVulnerabilityCellFormat.set_align('center')
-    highVulnerabilityCellFormat.set_align('vcenter')
-    highVulnerabilityCellFormat.set_bg_color(highVulnColor)
-    highVulnerabilityCellFormat.set_font_color('white')
-    highVulnerabilityCellFormat.set_border()
-
-    mediumVulnerabilityCellFormat = workbook.add_format()
-    mediumVulnerabilityCellFormat.set_text_wrap()
-    mediumVulnerabilityCellFormat.set_font_size('12')
-    mediumVulnerabilityCellFormat.set_align('center')
-    mediumVulnerabilityCellFormat.set_align('vcenter')
-    mediumVulnerabilityCellFormat.set_bg_color(mediumVulnColor)
-    mediumVulnerabilityCellFormat.set_border()
-
-    lowVulnerabilityCellFormat = workbook.add_format()
-    lowVulnerabilityCellFormat.set_text_wrap()
-    lowVulnerabilityCellFormat.set_font_size('12')
-    lowVulnerabilityCellFormat.set_align('center')
-    lowVulnerabilityCellFormat.set_align('vcenter')
-    lowVulnerabilityCellFormat.set_bg_color(lowVulnColor)
-    lowVulnerabilityCellFormat.set_border()
-
-    unknownVulnerabilityCellFormat = workbook.add_format()
-    unknownVulnerabilityCellFormat.set_text_wrap()
-    unknownVulnerabilityCellFormat.set_font_size('12')
-    unknownVulnerabilityCellFormat.set_align('center')
-    unknownVulnerabilityCellFormat.set_align('vcenter')
-    unknownVulnerabilityCellFormat.set_bg_color(noneVulnColor)
-    unknownVulnerabilityCellFormat.set_border()
-
-    approvedCellFormat = workbook.add_format()
-    approvedCellFormat.set_text_wrap()
-    approvedCellFormat.set_font_size('10')
-    approvedCellFormat.set_align('center')
-    approvedCellFormat.set_align('vcenter')
-    approvedCellFormat.set_font_color(approvedColor)
-    approvedCellFormat.set_border()
-
-    rejectedCellFormat = workbook.add_format()
-    rejectedCellFormat.set_text_wrap()
-    rejectedCellFormat.set_font_size('10')
-    rejectedCellFormat.set_align('center')
-    rejectedCellFormat.set_align('vcenter')
-    rejectedCellFormat.set_font_color(rejectedColor)
-    rejectedCellFormat.set_border()
-
-    draftCellFormat = workbook.add_format()
-    draftCellFormat.set_text_wrap()
-    draftCellFormat.set_font_size('10')
-    draftCellFormat.set_align('center')
-    draftCellFormat.set_align('vcenter')
-    draftCellFormat.set_border()
-
-    complianceCellFormat = workbook.add_format()
-    complianceCellFormat.set_text_wrap()
-    complianceCellFormat.set_font_color(rejectedColor)
-    complianceCellFormat.set_align('vcenter')
-    complianceCellFormat.set_font_size('10')
-    complianceCellFormat.set_border()
-
-
-    dataWorksheet.merge_range('B1:F1', "Report Generated: %s" %(datetime.now().strftime("%B %d, %Y at %H:%M:%S")))
+    dataWorksheet.merge_range('B1:F1', "Report Generated: %s" %datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S"))
     dataWorksheet.merge_range('B2:F2', "Report Version: %s" %_version.__version__)
 
     # Populate the summary data for the charts
@@ -235,6 +141,36 @@ def generate_xlsx_report(reportData, reportNameBase):
     defaultChartWidth = 700
     summaryChartHeight = 150
 
+    # Determine the vulnerability labels
+    if cvssVersion == "3.x": 
+        vulnerabilityBarColors = [report_branding.xlsx.xlsx_formatting.criticalVulnColor, 
+                                    report_branding.xlsx.xlsx_formatting.highVulnColor, 
+                                    report_branding.xlsx.xlsx_formatting.mediumVulnColor, 
+                                    report_branding.xlsx.xlsx_formatting.lowVulnColor, 
+                                    report_branding.xlsx.xlsx_formatting.noneVulnColor]
+        vulnerabiltyDataStartColumn = 5 # Start data in Column F
+    else:
+        vulnerabilityBarColors = [report_branding.xlsx.xlsx_formatting.highVulnColor, 
+                                    report_branding.xlsx.xlsx_formatting.mediumVulnColor, 
+                                    report_branding.xlsx.xlsx_formatting.lowVulnColor, 
+                                    report_branding.xlsx.xlsx_formatting.noneVulnColor]
+        vulnerabiltyDataStartColumn = 6 # Start data in Column G
+
+
+    licenseBarColors = [report_branding.xlsx.xlsx_formatting.p1LicenseColor, 
+                            report_branding.xlsx.xlsx_formatting.p2LicenseColor, 
+                            report_branding.xlsx.xlsx_formatting.p3LicenseColor, 
+                            report_branding.xlsx.xlsx_formatting.NALicenseColor]
+    licenseDataStartColumn = 1 # B Column is where the data starts
+
+
+
+    reviewStatusBarColors = [report_branding.xlsx.xlsx_formatting.approvedColor, 
+                                report_branding.xlsx.xlsx_formatting.rejectedColor, 
+                                report_branding.xlsx.xlsx_formatting.draftColor]
+    reviewStatusDataStartColumn = 10 # Start data in Column K
+
+
     ###############################################################################################
     # Do we need application level summary charts?
     if len(projectList) > 1:
@@ -246,8 +182,8 @@ def generate_xlsx_report(reportData, reportNameBase):
             summaryWorksheet.set_column('A:Z', 2)
             summaryWorksheet.hide_gridlines(2)
             
-            summaryWorksheet.write('C4', projectName, boldCellFormat) # Row 3, column 2
-            display_project_hierarchy(summaryWorksheet, projectHierarchy, 3, 2, boldCellFormat)
+            summaryWorksheet.write('C4', projectName, hierarchyCellFormat) # Row 3, column 2
+            display_project_hierarchy(summaryWorksheet, projectHierarchy, 3, 2, hierarchyCellFormat)
 
 
         # Create the charts now
@@ -259,9 +195,6 @@ def generate_xlsx_report(reportData, reportNameBase):
         applicationLicenseSummaryChart.set_size({'width': defaultChartWidth, 'height': summaryChartHeight})
         applicationLicenseSummaryChart.set_legend({'position': 'bottom'})
         applicationLicenseSummaryChart.set_y_axis({'reverse': True})
-
-        licenseBarColors = [p1LicenseColor, p2LicenseColor, p3LicenseColor, NALicenseColor]
-        licenseDataStartColumn = 1 # B Column is where the data starts
 
         for columnIndex in range(0, 4):
             applicationLicenseSummaryChart.add_series({ 
@@ -280,12 +213,6 @@ def generate_xlsx_report(reportData, reportNameBase):
         applicationVulnerabilitySummaryChart.set_legend({'position': 'bottom'})
         applicationVulnerabilitySummaryChart.set_y_axis({'reverse': True})
 
-        if cvssVersion == "3.x": 
-            vulnerabilityBarColors = [criticalVulnColor, highVulnColor, mediumVulnColor, lowVulnColor, noneVulnColor]
-            vulnerabiltyDataStartColumn = 5 # Start data in Column F
-        else:
-            vulnerabilityBarColors = [highVulnColor, mediumVulnColor, lowVulnColor, noneVulnColor]
-            vulnerabiltyDataStartColumn = 6 # Start data in Column G
         
         for columnIndex in range(0, len(vulnerabilityBarColors)):
 
@@ -304,9 +231,6 @@ def generate_xlsx_report(reportData, reportNameBase):
         applicationReviewStatusSummaryChart.set_size({'width': defaultChartWidth, 'height': summaryChartHeight})
         applicationReviewStatusSummaryChart.set_legend({'position': 'bottom'})
         applicationReviewStatusSummaryChart.set_y_axis({'reverse': True})
-
-        reviewStatusBarColors = [approvedColor, rejectedColor, draftColor]
-        reviewStatusDataStartColumn = 10 # Start data in Column K
 
         for columnIndex in range(0, len(reviewStatusBarColors)):
 
@@ -334,9 +258,6 @@ def generate_xlsx_report(reportData, reportNameBase):
     projectLicenseSummaryChart.set_legend({'position': 'bottom'})
     projectLicenseSummaryChart.set_y_axis({'reverse': True})
 
-    licenseBarColors = [p1LicenseColor, p2LicenseColor, p3LicenseColor, NALicenseColor]
-    licenseDataStartColumn = 1 # B Column is where the data starts
-
     for columnIndex in range(0, 4):
         projectLicenseSummaryChart.add_series({ 
             'name':       ['Chart Data', catagoryHeaderRow, columnIndex+licenseDataStartColumn], 
@@ -357,13 +278,6 @@ def generate_xlsx_report(reportData, reportNameBase):
     projectVulnerabilitySummaryChart.set_size({'width': defaultChartWidth, 'height': summaryChartHeight + (len(projectList)* 30)})
     projectVulnerabilitySummaryChart.set_legend({'position': 'bottom'})
     projectVulnerabilitySummaryChart.set_y_axis({'reverse': True})
-
-    if cvssVersion == "3.x": 
-        vulnerabilityBarColors = [criticalVulnColor, highVulnColor, mediumVulnColor, lowVulnColor, noneVulnColor]
-        vulnerabiltyDataStartColumn = 5 # Start data in Column F
-    else:
-        vulnerabilityBarColors = [highVulnColor, mediumVulnColor, lowVulnColor, noneVulnColor]
-        vulnerabiltyDataStartColumn = 6 # Start data in Column G
     
     for columnIndex in range(0, len(vulnerabilityBarColors)):
 
@@ -386,9 +300,6 @@ def generate_xlsx_report(reportData, reportNameBase):
     projectReviewStatusSummaryChart.set_legend({'position': 'bottom'})
     projectReviewStatusSummaryChart.set_y_axis({'reverse': True})
 
-    reviewStatusBarColors = [approvedColor, rejectedColor, draftColor]
-    reviewStatusDataStartColumn = 10 # Start data in Column K
-    
     for columnIndex in range(0, len(reviewStatusBarColors)):
 
         projectReviewStatusSummaryChart.add_series({ 
