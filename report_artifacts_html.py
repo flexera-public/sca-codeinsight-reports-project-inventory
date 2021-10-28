@@ -11,7 +11,6 @@ import logging
 import os
 import base64
 from datetime import datetime
-import re
 
 import _version
 
@@ -22,7 +21,8 @@ def generate_html_report(reportData):
     logger.info("Entering generate_html_report")
 
     reportName = reportData["reportName"]
-    projectName = reportData["projectName"] 
+    projectName = reportData["projectName"]
+    projectNameForFile  = reportData["projectNameForFile"]
     projectID = reportData["projectID"] 
     fileNameTimeStamp = reportData["fileNameTimeStamp"] 
     inventoryData = reportData["inventoryData"]
@@ -46,8 +46,6 @@ def generate_html_report(reportData):
 
     # Grab the current date/time for report date stamp
     now = datetime.now().strftime("%B %d, %Y at %H:%M:%S")
-    
-    projectNameForFile = re.sub(r"[^a-zA-Z0-9]+", '-', projectName )
 
     if len(projectList)==1:
         htmlFile = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".html"

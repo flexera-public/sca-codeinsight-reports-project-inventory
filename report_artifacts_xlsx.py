@@ -11,7 +11,6 @@ File : report_artifacts_xlsx.py
 import logging
 from datetime import datetime
 import xlsxwriter
-import re
 
 import _version
 
@@ -21,7 +20,8 @@ def generate_xlsx_report(reportData):
     logger.info("    Entering generate_xlsx_report")
 
     reportName = reportData["reportName"]
-    projectName = reportData["projectName"] 
+    projectName = reportData["projectName"]
+    projectNameForFile  = reportData["projectNameForFile"] 
     projectID = reportData["projectID"] 
     fileNameTimeStamp = reportData["fileNameTimeStamp"] 
     inventoryData = reportData["inventoryData"]
@@ -48,8 +48,6 @@ def generate_xlsx_report(reportData):
     approvedColor = "#008000"
     rejectedColor = "#C00000"
     draftColor = "#D3D3D3"
-
-    projectNameForFile = re.sub(r"[^a-zA-Z0-9]+", '-', projectName )
 
     if len(projectList)==1:
         xlsxFile = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".xlsx"

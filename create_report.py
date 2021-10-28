@@ -105,8 +105,12 @@ def main():
 	else:
 		reportData = report_data.gather_data_for_report(baseURL, projectID, authToken, reportName, reportOptions)
 		print("    Report data has been collected")
-		reportData["fileNameTimeStamp"] = fileNameTimeStamp
 		projectName = reportData["projectName"]
+		projectNameForFile = re.sub(r"[^a-zA-Z0-9]+", '-', projectName )  # Remove special characters from project name for artifacts
+
+		reportData["projectNameForFile"] = projectNameForFile
+		reportData["fileNameTimeStamp"] = fileNameTimeStamp
+
 		numProjects = len(reportData["projectList"])
 
 		if "errorMsg" in reportData.keys():
