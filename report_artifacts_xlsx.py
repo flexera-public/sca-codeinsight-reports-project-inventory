@@ -16,14 +16,10 @@ import _version
 
 logger = logging.getLogger(__name__)
 #------------------------------------------------------------------#
-def generate_xlsx_report(reportData):
+def generate_xlsx_report(reportData, reportNameBase):
     logger.info("    Entering generate_xlsx_report")
 
-    reportName = reportData["reportName"]
     projectName = reportData["projectName"]
-    projectNameForFile  = reportData["projectNameForFile"] 
-    projectID = reportData["projectID"] 
-    fileNameTimeStamp = reportData["fileNameTimeStamp"] 
     inventoryData = reportData["inventoryData"]
     projectList = reportData["projectList"]
     projectSummaryData = reportData["projectSummaryData"]
@@ -32,6 +28,8 @@ def generate_xlsx_report(reportData):
     
     cvssVersion = projectSummaryData["cvssVersion"]  # 2.0/3.x
     includeComplianceInformation = projectSummaryData["includeComplianceInformation"]  # True/False
+
+    xlsxFile = reportNameBase + ".xlsx"
 
     # Colors for report
     reveneraGray = '#323E48'
@@ -48,13 +46,6 @@ def generate_xlsx_report(reportData):
     approvedColor = "#008000"
     rejectedColor = "#C00000"
     draftColor = "#D3D3D3"
-
-    if len(projectList)==1:
-        xlsxFile = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".xlsx"
-    else:
-        xlsxFile = projectNameForFile + "-with-children-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".xlsx" 
-
-    logger.debug("        xlsxFile: %s" %xlsxFile)
 
     # Create the workbook/worksheet for storying the data
     workbook = xlsxwriter.Workbook(xlsxFile)

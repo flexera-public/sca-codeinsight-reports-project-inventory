@@ -17,13 +17,11 @@ import _version
 logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------------#
-def generate_html_report(reportData):
+def generate_html_report(reportData, reportNameBase):
     logger.info("Entering generate_html_report")
 
     reportName = reportData["reportName"]
     projectName = reportData["projectName"]
-    projectNameForFile  = reportData["projectNameForFile"]
-    projectID = reportData["projectID"] 
     fileNameTimeStamp = reportData["fileNameTimeStamp"] 
     inventoryData = reportData["inventoryData"]
     projectList = reportData["projectList"]
@@ -39,26 +37,18 @@ def generate_html_report(reportData):
     logoImageFile =  os.path.join(scriptDirectory, "report_branding/images/logo_reversed.svg")
     iconFile =  os.path.join(scriptDirectory, "report_branding/images/favicon-revenera.ico")
 
+    htmlFile = reportNameBase + ".html"
+
     #########################################################
     #  Encode the image files
     encodedLogoImage = encodeImage(logoImageFile)
     encodedfaviconImage = encodeImage(iconFile)
 
-    # Grab the current date/time for report date stamp
-    now = datetime.now().strftime("%B %d, %Y at %H:%M:%S")
-
-    if len(projectList)==1:
-        htmlFile = projectNameForFile + "-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".html"
-    else:
-        htmlFile = projectNameForFile + "-with-children-" + str(projectID) + "-" + reportName.replace(" ", "_") + "-" + fileNameTimeStamp + ".html" 
-
-    logger.debug("    htmlFile: %s" %htmlFile)
-
     #---------------------------------------------------------------------------------------------------
     # Create a simple HTML file to display
     #---------------------------------------------------------------------------------------------------
     try:
-        html_ptr = open(htmlFile,"w")
+        html_ptr = open(htmlFile, "w")
     except:
         logger.error("Failed to open htmlfile %s:" %htmlFile)
         raise
@@ -346,7 +336,7 @@ def generate_html_report(reportData):
     html_ptr.write("<!-- BEGIN FOOTER -->\n")
     html_ptr.write("<div class='report-footer'>\n")
     html_ptr.write("  <div style='float:left'>&copy; %s Flexera</div>\n" %fileNameTimeStamp[0:4])
-    html_ptr.write("  <div style='float:right'>Generated on %s</div>\n" %now)
+    html_ptr.write("  <div style='float:right'>Generated on %s</div>\n" %datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S"))
     html_ptr.write("<br>\n")
     html_ptr.write("  <div style='float:right'>Report Version: %s</div>\n" %_version.__version__)
     html_ptr.write("</div>\n")
