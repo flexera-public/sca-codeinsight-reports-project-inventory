@@ -207,7 +207,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                             complianceIssues["Invalid Version"] = componentVersionName + " is not a valid version for the current component." 
                 
                 # Was there a license selected?
-                if licenseName == "":
+                if selectedLicenseName == "":
                     complianceIssues["Unspecified license"] = "This item has does not have a license associated with it. Additional analysis is recommended."
 
 
