@@ -1,6 +1,6 @@
 # sca-codeinsight-reports-project-inventory
 
-The sca-codeinsight-reports-project-inventory repository is a example report for Revenera's Code Insight product. This report allows a user to get a quick high level summary of the inventory items within a project. This report will take into account any child projects (recursively) and roll up the associated inventory information on a project as well as an application basis.
+The sca-codeinsight-reports-project-inventory repository is a example report for Revenera's Code Insight product. This report allows a user to get a quick high level summary of the inventory items within a project. This report will take into account any child projects (recursively) and roll up the associated inventory information on a project as well as an application basis.  A display a hierarchy chart of the project structure is also provided.
 
 This repository utilizes the following via CDN for the creation of the report artifacts.
 
@@ -31,9 +31,16 @@ This repository should be cloned directly into the **$CODEINSIGHT_INSTALLDIR/cus
 
 **Submodule Repositories**
 
-This repository contains two submodules pointing to other git repos for code that are used across multiple projects. After the initial repository clone, you will need to enter the cloned directory and pull down the necessary submodules code via
+This repository contains two submodule repositories for code that is used across multiple projects.  There are two options for cloning this repository and ensuring that the required submodules are also installed.
+
+Clone the report repository use the recursive option to automatically pull in the required submodules
+
+	git clone --recursive
+
+ Alternatively clone the report repository and then clone the submodules separately by entering the cloned directory and then pulling down the necessary submodules code via   
 
 	git submodule init
+
 	git submodule update
 
 **Python Requirements**
@@ -44,7 +51,7 @@ The required python modules can be installed with the use of the [requirements.t
 
 ## Configuration and Report Registration
  
-For registration purposes the file **server_properties.json** should be ceated and located in the **$CODEINSIGHT_INSTALLDIR/custom_report_scripts/** directory.  This file contains a json with information required to register the report within Code Insight as shown  here:
+For registration purposes the file **server_properties.json** should be created and located in the **$CODEINSIGHT_INSTALLDIR/custom_report_scripts/** directory.  This file contains a json with information required to register the report within Code Insight as shown  here:
 
 >     {
 >         "core.server.url": "http://localhost:8888" ,
