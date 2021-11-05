@@ -9,7 +9,6 @@ File : report_artifacts_xlsx.py
 '''
 
 import logging
-from datetime import datetime
 import xlsxwriter
 
 import report_branding.xlsx.xlsx_formatting
@@ -17,11 +16,12 @@ import _version
 
 logger = logging.getLogger(__name__)
 #------------------------------------------------------------------#
-def generate_xlsx_report(reportData, reportNameBase):
+def generate_xlsx_report(reportData):
     logger.info("    Entering generate_xlsx_report")
 
     projectName = reportData["projectName"]
-    fileNameTimeStamp = reportData["fileNameTimeStamp"] 
+    reportFileNameBase = reportData["reportFileNameBase"]
+    reportTimeStamp =  reportData["reportTimeStamp"] 
     inventoryData = reportData["inventoryData"]
     projectList = reportData["projectList"]
     projectSummaryData = reportData["projectSummaryData"]
@@ -31,11 +31,7 @@ def generate_xlsx_report(reportData, reportNameBase):
     cvssVersion = projectSummaryData["cvssVersion"]  # 2.0/3.x
     includeComplianceInformation = projectSummaryData["includeComplianceInformation"]  # True/False
 
-    xlsxFile = reportNameBase + ".xlsx"
-
-
-
-
+    xlsxFile = reportFileNameBase + ".xlsx"
 
     # Create the workbook/worksheet for storying the data
     workbook = xlsxwriter.Workbook(xlsxFile)
@@ -75,7 +71,7 @@ def generate_xlsx_report(reportData, reportNameBase):
     complianceCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.complianceCellFormat)
   
 
-    dataWorksheet.merge_range('B1:F1', "Report Generated: %s" %datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S"))
+    dataWorksheet.merge_range('B1:F1', "Report Generated: %s" %reportTimeStamp)
     dataWorksheet.merge_range('B2:F2', "Report Version: %s" %_version.__version__)
 
     # Populate the summary data for the charts

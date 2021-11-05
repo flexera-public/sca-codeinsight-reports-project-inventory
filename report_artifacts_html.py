@@ -10,19 +10,19 @@ File : report_artifacts_html.py
 import logging
 import os
 import base64
-from datetime import datetime
 
 import _version
 
 logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------------#
-def generate_html_report(reportData, reportNameBase):
+def generate_html_report(reportData):
     logger.info("Entering generate_html_report")
 
     reportName = reportData["reportName"]
     projectName = reportData["projectName"]
-    fileNameTimeStamp = reportData["fileNameTimeStamp"] 
+    reportFileNameBase = reportData["reportFileNameBase"]
+    reportTimeStamp =  reportData["reportTimeStamp"] 
     inventoryData = reportData["inventoryData"]
     projectList = reportData["projectList"]
     projectSummaryData = reportData["projectSummaryData"]
@@ -37,7 +37,7 @@ def generate_html_report(reportData, reportNameBase):
     logoImageFile =  os.path.join(scriptDirectory, "report_branding/images/logo_reversed.svg")
     iconFile =  os.path.join(scriptDirectory, "report_branding/images/favicon-revenera.ico")
 
-    htmlFile = reportNameBase + ".html"
+    htmlFile = reportFileNameBase + ".html"
 
     #########################################################
     #  Encode the image files
@@ -335,7 +335,7 @@ def generate_html_report(reportData, reportNameBase):
     #---------------------------------------------------------------------------------------------------
     html_ptr.write("<!-- BEGIN FOOTER -->\n")
     html_ptr.write("<div class='report-footer'>\n")
-    html_ptr.write("  <div style='float:right'>Generated on %s</div>\n" %datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S"))
+    html_ptr.write("  <div style='float:right'>Generated on %s</div>\n" %reportTimeStamp)
     html_ptr.write("<br>\n")
     html_ptr.write("  <div style='float:right'>Report Version: %s</div>\n" %_version.__version__)
     html_ptr.write("</div>\n")
