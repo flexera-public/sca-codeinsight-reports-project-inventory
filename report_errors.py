@@ -11,6 +11,8 @@ import logging
 import os
 import base64
 
+import _version
+
 logger = logging.getLogger(__name__)
 
 #--------------------------------------------------------------------------------#
@@ -33,17 +35,15 @@ def create_error_report(reportData):
 def generate_error_report(reportData):
     logger.info("    Entering generate_error_report")
 
-    scriptDirectory = os.path.dirname(os.path.realpath(__file__))
-    cssFile =  os.path.join(scriptDirectory, "html-assets/css/revenera_common.css")
-    logoImageFile =  os.path.join(scriptDirectory, "html-assets/images/logo_reversed.svg")
-    iconFile =  os.path.join(scriptDirectory, "html-assets/images/favicon-revenera.ico")
-    
-    reportName = "Report Creation Failure"
-    reportName = reportData["reportName"] + "_Error"
-    projectID = reportData["projectID"]
-    fileNameTimeStamp = reportData["fileNameTimeStamp"]
-
+    reportName = reportData["reportName"]
+    reportFileNameBase = reportData["reportFileNameBase"]
     errorMsg = reportData["errorMsg"]
+    reportTimeStamp = reportData["reportTimeStamp"] 
+
+    scriptDirectory = os.path.dirname(os.path.realpath(__file__))
+    cssFile =  os.path.join(scriptDirectory, "report_branding/css/revenera_common.css")
+    logoImageFile =  os.path.join(scriptDirectory, "report_branding/images/logo_reversed.svg")
+    iconFile =  os.path.join(scriptDirectory, "report_branding/images/favicon-revenera.ico")
 
     #########################################################
     #  Encode the image files
@@ -51,8 +51,7 @@ def generate_error_report(reportData):
     encodedfaviconImage = encodeImage(iconFile)
 
     # Grab the current date/time for report date stamp
-    htmlFile = reportName.replace(" ", "_") + "-" + str(projectID) + "-" + fileNameTimeStamp + ".html"
-    logger.debug("htmlFile: %s" %htmlFile)
+    htmlFile = reportFileNameBase + ".html"
     
     #---------------------------------------------------------------------------------------------------
     # Create a simple HTML file to display
@@ -126,10 +125,11 @@ def generate_error_report(reportData):
     #---------------------------------------------------------------------------------------------------
     html_ptr.write("<!-- BEGIN FOOTER -->\n")
     html_ptr.write("<div class='report-footer'>\n")
-    html_ptr.write("  <div style='float:left'>&copy; 2021 Flexera</div>\n")
-    html_ptr.write("  <div style='float:left'>&copy; %s Flexera</div>\n" %fileNameTimeStamp[0:4])
+    html_ptr.write("  <div style='float:right'>Generated on %s</div>\n" %reportTimeStamp)
+    html_ptr.write("<br>\n")
+    html_ptr.write("  <div style='float:right'>Report Version: %s</div>\n" %_version.__version__)
     html_ptr.write("</div>\n")
-    html_ptr.write("<!-- END FOOTER -->\n")   
+    html_ptr.write("<!-- END FOOTER -->\n")  
 
     html_ptr.write("</div>\n")    
 

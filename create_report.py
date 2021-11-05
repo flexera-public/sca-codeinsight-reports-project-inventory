@@ -97,12 +97,16 @@ def main():
 
 	# Did we fail the options validation?
 	if "errorMsg" in reportOptions.keys():
-		reportOptions["reportName"] = reportName
-		reportOptions["fileNameTimeStamp"] = fileNameTimeStamp
-		reportOptions["projectID"] = projectID
-		projectName = "Report_Creation_Error"
-		numProjects = 0  # No project information gathered
-		reports = report_errors.create_error_report(reportOptions)
+
+		reportFileNameBase = reportName.replace(" ", "_") + "-Creation_Error-" + fileNameTimeStamp
+
+		reportData = {}
+		reportData["errorMsg"] = reportOptions["errorMsg"]
+		reportData["reportName"] = reportName
+		reportData["reportTimeStamp"] = datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S")
+		reportData["reportFileNameBase"] = reportFileNameBase
+
+		reports = report_errors.create_error_report(reportData)
 		print("    *** ERROR  ***  Error found validating report options")
 	else:
 		reportData = report_data.gather_data_for_report(baseURL, projectID, authToken, reportName, reportOptions)
@@ -119,8 +123,6 @@ def main():
 		reportData["projectNameForFile"] = projectNameForFile
 		reportData["reportTimeStamp"] = datetime.strptime(fileNameTimeStamp, "%Y%m%d-%H%M%S").strftime("%B %d, %Y at %H:%M:%S")
 		reportData["reportFileNameBase"] = reportFileNameBase
-
-		numProjects = len(reportData["projectList"])
 
 		if "errorMsg" in reportData.keys():
 			reports = report_errors.create_error_report(reportData)
