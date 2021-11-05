@@ -69,10 +69,6 @@ def generate_xlsx_report(reportData):
     draftCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.draftCellFormat)
     # Compliance format
     complianceCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.complianceCellFormat)
-  
-
-    dataWorksheet.merge_range('B1:F1', "Report Generated: %s" %reportTimeStamp)
-    dataWorksheet.merge_range('B2:F2', "Report Version: %s" %_version.__version__)
 
     # Populate the summary data for the charts
     dataWorksheet.write('A8', "Application Summary")
@@ -174,12 +170,12 @@ def generate_xlsx_report(reportData):
         # Add project hierarchy view for each summary tab
         for summaryWorksheet in [licenseSummaryWorksheet, vulnerabilitySummaryWorksheet, reviewSummaryWorksheet]:
 
-            summaryWorksheet.merge_range('B2:M2', "Project Hierarchy", tableHeaderFormat)
+            summaryWorksheet.merge_range('B4:M4', "Project Hierarchy", tableHeaderFormat)
             summaryWorksheet.set_column('A:Z', 2)
             summaryWorksheet.hide_gridlines(2)
             
-            summaryWorksheet.write('C4', projectName, hierarchyCellFormat) # Row 3, column 2
-            display_project_hierarchy(summaryWorksheet, projectHierarchy, 3, 2, hierarchyCellFormat)
+            summaryWorksheet.write('C6', projectName, hierarchyCellFormat) # Row 5, column 2
+            display_project_hierarchy(summaryWorksheet, projectHierarchy, 5, 2, hierarchyCellFormat)
 
 
         # Create the charts now
@@ -305,10 +301,17 @@ def generate_xlsx_report(reportData):
             'fill':       {'color': reviewStatusBarColors[columnIndex]}        }) 
 
     if len(projectList) == 1:
-        projectSummaryWorksheet.insert_chart('A2', projectLicenseSummaryChart)
-        projectSummaryWorksheet.insert_chart('A11', projectVulnerabilitySummaryChart)
-        projectSummaryWorksheet.insert_chart('A20', projectReviewStatusSummaryChart)
+  
+        projectSummaryWorksheet.merge_range('A1:F1', "Report Generated: %s" %reportTimeStamp)
+        projectSummaryWorksheet.merge_range('A2:F2', "Report Version: %s" %_version.__version__)
+
+        projectSummaryWorksheet.insert_chart('A4', projectLicenseSummaryChart)
+        projectSummaryWorksheet.insert_chart('A13', projectVulnerabilitySummaryChart)
+        projectSummaryWorksheet.insert_chart('A23', projectReviewStatusSummaryChart)
     else:
+        licenseSummaryWorksheet.merge_range('A1:U1', "Report Generated: %s" %reportTimeStamp)
+        licenseSummaryWorksheet.merge_range('A2:U2', "Report Version: %s" %_version.__version__)
+
         licenseSummaryWorksheet.insert_chart('AA9', projectLicenseSummaryChart)
         vulnerabilitySummaryWorksheet.insert_chart('AA9', projectVulnerabilitySummaryChart)
         reviewSummaryWorksheet.insert_chart('AA9', projectReviewStatusSummaryChart) 
