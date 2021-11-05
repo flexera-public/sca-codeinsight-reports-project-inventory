@@ -124,6 +124,10 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                     else:
                         licenseName = licenseInformation["shortName"]
 
+                    # There is not specific selected licesne just let it be blank
+                    if licenseName == "I don't know":
+                        licenseName = ""
+
                     licenseDetails[selectedLicenseID] = {}
                     licenseDetails[selectedLicenseID]["selectedLicenseName"] = licenseName
                     licenseDetails[selectedLicenseID]["selectedLicenseUrl"] = licenseURL
@@ -138,6 +142,10 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                     selectedLicenseName = ""
                     selectedLicenseUrl = ""     
                     selectedLicensePriority = ""
+
+            # If there is no specific version just leave it blank
+            if componentVersionName == "N/A":
+                componentVersionName = ""
             
             componentUrl = inventoryItem["url"]
             inventoryReviewStatus = inventoryItem["reviewStatus"] 
@@ -180,7 +188,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                     complianceIssues["P1 license"] = "This item has a viral or strong copyleft license. Depnding on your usage there may be additional oblilgations. Please consult with your legal team.."
 
                 # Component version compliance issue
-                if componentVersionName == "N/A":
+                if componentVersionName == "":
                     complianceIssues["Unknown version"] = "This item has an unknown version. Additional analysis is recommended."
                 else:
                     if componentID == "55720":  # Is it the linux kernel?
@@ -197,8 +205,11 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                             complianceIssues["Old version"] = "The latest version is " + latestVersion + ". Your version is " + str(numberVersionsBack) + " versions back from the latest version. You should consider upgrading to a more recent version of this component."
                         elif numberVersionsBack == -1:
                             complianceIssues["Invalid Version"] = componentVersionName + " is not a valid version for the current component." 
-                            
- 
+                
+                # Was there a license selected?
+                if licenseName == "":
+                    complianceIssues["Unspecified license"] = "This item has does not have a license associated with it. Additional analysis is recommended."
+
 
             # Store the data for the inventory item for reporting
             inventoryData[inventoryID] = {
