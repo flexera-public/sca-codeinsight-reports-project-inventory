@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.3] - 2021-11-05
+### Added
+- Fix xlsx based hierarchy sorting
+- Break out report artifact formats into separate files
+- Migrate to branding submodule for xlsx support
+- Clean up unknown license/versions and add complaince message
+- Standardize report name and time stamps for all artifacts
+
 ## [6.0.2] - 2021-10-26
 ### Added
 - Update name of common config file to reflect it is a json file vs a prop file
