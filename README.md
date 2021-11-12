@@ -1,6 +1,6 @@
 # sca-codeinsight-reports-project-inventory
 
-The sca-codeinsight-reports-project-inventory repository is a example report for Revenera's Code Insight product. This report allows a user to get a quick high level summary of the inventory items within a project. This report will take into account any child projects (recursively) and roll up the associated inventory information on a project as well as an application basis.  A display a hierarchy chart of the project structure is also provided.
+The `sca-codeinsight-reports-project-inventory` repository is a example report for Revenera's Code Insight product. This report allows a user to get a quick high level summary of the inventory items within a project. This report will take into account any child projects (recursively) and roll up the associated inventory information on a project as well as an application basis.  A hierarchy chart of the project structure is also provided.
 
 This repository utilizes the following via CDN for the creation of the report artifacts.
 
