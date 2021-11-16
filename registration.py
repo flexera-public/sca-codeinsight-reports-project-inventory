@@ -41,23 +41,28 @@ logger = logging.getLogger(__name__)
 #####################################################################################################
 #  Code Insight System Information
 #  See if there is a common file for config details
-try:
-    file_ptr = open(propertiesFile, "r")
-    configData = json.load(file_ptr)
-    baseURL = configData["core.server.url"]
-    adminAuthToken = configData["core.server.token"]
-    file_ptr.close()
-    logger.info("Loading config data from properties file: %s" %propertiesFile)
-
-except:
+if os.path.exists(propertiesFile):
+    try:
+        file_ptr = open(propertiesFile, "r")
+        configData = json.load(file_ptr)
+        baseURL = configData["core.server.url"]
+        adminAuthToken = configData["core.server.token"]
+        file_ptr.close()
+        logger.info("Loading config data from properties file: %s" %propertiesFile)
+    except:
+        logger.error("Unable to open properties file: %s" %propertiesFile)
+else:
+    logger.info("Using config data from create_report.py")
     baseURL = "UPDATEME" # i.e. http://localhost:8888 or https://sca.mycodeinsight.com:8443 
     adminAuthToken = "UPDATEME"
 
 #####################################################################################################
 # Quick sanity check
 if adminAuthToken == "UPDATEME" or baseURL == "UPDATEME":
+    logger.error("Make sure baseURL and the admin authorization token have been updated within registration.py")
     print("Make sure baseURL and the admin authorization token have been updated within registration.py")
     sys.exit()
+    
 
 #####################################################################################################
 #  Report Details

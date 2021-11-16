@@ -32,9 +32,9 @@ else:
     pass
 
 propertiesFile = "../server_properties.json"  # Created by installer or manually
-propertiesFile = logfileName = os.path.dirname(os.path.realpath(__file__)) + "/" +  propertiesFile
-baseURL = "http://localhost:8888"   # Required if the core.server.properties files is not used
+propertiesFile =  os.path.dirname(os.path.realpath(__file__)) + "/" +  propertiesFile
 logfileName = os.path.dirname(os.path.realpath(__file__)) + "/_project_inventory_report.log"
+
 
 ###################################################################################
 #  Set up logging handler to allow for different levels of logging to be capture
@@ -58,6 +58,7 @@ def main():
 
 	logger.info("Creating %s - %s" %(reportName, _version.__version__))
 	print("Creating %s - %s" %(reportName, _version.__version__))
+	print("    Logfile: %s" %(logfileName))
 
 	# See what if any arguments were provided
 	args = parser.parse_args()
@@ -76,14 +77,18 @@ def main():
 	#####################################################################################################
 	#  Code Insight System Information
 	#  Pull the base URL from the same file that the installer is creating
-	try:
-		file_ptr = open(propertiesFile, "r")
-		configData = json.load(file_ptr)
-		baseURL = configData["core.server.url"]
-		file_ptr.close()
-		logger.info("Using baseURL from properties file: %s" %propertiesFile)
-	except:
-		logger.info("Using baseURL, %s,  from create_report.py" %baseURL)
+	if os.path.exists(propertiesFile):
+		try:
+			file_ptr = open(propertiesFile, "r")
+			configData = json.load(file_ptr)
+			baseURL = configData["core.server.url"]
+			file_ptr.close()
+			logger.info("Using baseURL from properties file: %s" %propertiesFile)
+		except:
+			logger.error("Unable to open properties file: %s" %propertiesFile)
+	else:
+		baseURL = "http://localhost:8888"   # Required if the core.server.properties files is not used
+		logger.info("Using baseURL from create_report.py")
 
 
 	reportOptions = json.loads(reportOptions)
