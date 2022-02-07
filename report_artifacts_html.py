@@ -600,6 +600,12 @@ def generate_project_hierarchy_tree(html_ptr, projectHierarchy, projectInventory
     for project in projectHierarchy:
 
         inventoryCount = projectInventoryCount[project["projectName"]]
+        
+        # is this the top most parent or a child project with a parent
+        if "uniqueID" in project:
+            projectIdentifier = project["uniqueID"]
+        else:
+            projectIdentifier = project["projectID"]
 
         html_ptr.write('''{
             'id': '%s', 
@@ -608,7 +614,7 @@ def generate_project_hierarchy_tree(html_ptr, projectHierarchy, projectInventory
             'a_attr': {
                 'href': '%s'
             }
-        },\n'''  %(project["projectID"], project["parent"], project["projectName"] + " (" + str(inventoryCount) + " items)" , project["projectLink"]))
+        },\n'''  %(projectIdentifier, project["parent"], project["projectName"] + " (" + str(inventoryCount) + " items)" , project["projectLink"]))
 
     html_ptr.write('''\n]''')
 
