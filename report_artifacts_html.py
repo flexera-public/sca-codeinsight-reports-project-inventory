@@ -197,6 +197,7 @@ def generate_html_report(reportData):
     if len(projectList) > 1: 
         html_ptr.write("            <th style='width: 15%' class='text-center'>PROJECT</th>\n") 
     html_ptr.write("            <th style='width: 25%' class='text-center text-nowrap'>INVENTORY ITEM</th>\n") 
+    html_ptr.write("            <th style='width: 25%' class='text-center text-nowrap'>TECHNOPEDIA ID</th>\n") 
     html_ptr.write("            <th style='width: 10%' class='text-center'>PRIORITY</th>\n") 
     html_ptr.write("            <th style='width: 15%' class='text-center'>COMPONENT</th>\n")
     html_ptr.write("            <th style='width: 5%' class='text-center'>VERSION</th>\n")
@@ -232,6 +233,7 @@ def generate_html_report(reportData):
         inventoryLink = inventoryData[inventoryID]["inventoryLink"]
         projectLink = inventoryData[inventoryID]["projectLink"]
         complianceIssues = inventoryData[inventoryID]["complianceIssues"]
+        technopediaCatalogID = inventoryData[inventoryID]["technopediaCatalogID"]
 
         logger.debug("            Project Name:  %s   Inventory Name %s" %(projectName, inventoryItemName))
 
@@ -257,7 +259,8 @@ def generate_html_report(reportData):
         if len(projectList) > 1:
             html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(projectLink, projectName))
         html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(inventoryLink, inventoryItemName))
- 
+
+        html_ptr.write("            <td class='text-left'>%s</td>\n" %(technopediaCatalogID))
 
         if inventoryPriority == "High":
             html_ptr.write("            <td data-sort='4' class='text-left text-nowrap'><span class='dot dot-red'></span>P1 - %s</td>\n" %(inventoryPriority))

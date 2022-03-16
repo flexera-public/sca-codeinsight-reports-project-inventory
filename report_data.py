@@ -15,6 +15,7 @@ import CodeInsight_RESTAPIs.project.get_project_information
 import CodeInsight_RESTAPIs.project.get_inventory_summary
 import CodeInsight_RESTAPIs.license.license_lookup
 import CodeInsight_RESTAPIs.component.get_component_details
+import CodeInsight_RESTAPIs.inventory.get_inventory_details
 
 logger = logging.getLogger(__name__)
 
@@ -106,6 +107,15 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             componentVersionName = inventoryItem["componentVersionName"]
             selectedLicenseID = inventoryItem["selectedLicenseId"]
             selectedLicenseName = inventoryItem["selectedLicenseSPDXIdentifier"]
+
+            # Get other deails specific to the inventory item not contained in the summary call
+            inventoryDetails = CodeInsight_RESTAPIs.inventory.get_inventory_details.get_inventory_item_details_no_vuln_data(inventoryID, baseURL, authToken)
+            customFields = inventoryDetails['customFields']
+            for customField in customFields:
+                if customField["fieldLabel"] == "Technopedia Catalog ID":
+                    technopediaCatalogID = customField["value"]
+                    if technopediaCatalogID == None:
+                        technopediaCatalogID = ""
 
             if selectedLicenseID in licenseDetails.keys():
                 selectedLicenseName = licenseDetails[selectedLicenseID]["selectedLicenseName"]
@@ -225,7 +235,8 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
                 "inventoryReviewStatus" : inventoryReviewStatus,
                 "inventoryLink" : inventoryLink,
                 "projectLink" : projectLink,
-                "complianceIssues" : complianceIssues
+                "complianceIssues" : complianceIssues,
+                "technopediaCatalogID": technopediaCatalogID
             }
 
             #############################################
