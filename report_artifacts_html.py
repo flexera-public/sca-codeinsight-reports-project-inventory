@@ -28,6 +28,7 @@ def generate_html_report(reportData):
     projectSummaryData = reportData["projectSummaryData"]
     applicationSummaryData = reportData["applicationSummaryData"]
     projectInventoryCount = reportData["projectInventoryCount"]
+    totalInventoryCount = reportData["totalInventoryCount"]
 
     cvssVersion = projectSummaryData["cvssVersion"]  # 2.0/3.x
     includeComplianceInformation = projectSummaryData["includeComplianceInformation"]  # True/False
@@ -166,7 +167,7 @@ def generate_html_report(reportData):
         html_ptr.write("    <div class='row'>\n")
 
         html_ptr.write("        <div class='col-sm'>\n")
-        html_ptr.write("<h6 class='gray' style='padding-top: 10px;'><center>Project Hierarchy</center></h6>") 
+        html_ptr.write("<h6 class='gray' style='padding-top: 10px;'><center>Project Hierarchy<br>(%s Total Items) </center></h6>" %totalInventoryCount) 
         html_ptr.write("            <div id='project_hierarchy'></div>\n")
         
         html_ptr.write("        </div>\n")

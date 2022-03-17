@@ -32,6 +32,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     inventoryData = {}  # Create a dictionary containing the inventory data using inventoryID as keys
     projectData = {} # Create a dictionary containing the project level summary data using projectID as keys
     licenseDetails = {} # Dictionary to store license details to avoid multiple lookups for same id
+    totalInventoryCount = 0
 
     # Get the list of parent/child projects start at the base project
     projectHierarchy = CodeInsight_RESTAPIs.project.get_child_projects.get_child_projects_recursively(baseURL, projectID, authToken)
@@ -78,6 +79,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             print("Project %s contains no inventory items." %projectName)
 
         projectInventoryCount[projectName] = len(projectInventorySummary)
+        totalInventoryCount += len(projectInventorySummary)
 
         # Create empty dictionary for project level data for this project
         projectData[projectName] = {}
@@ -281,6 +283,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     reportData["projectSummaryData"] = projectSummaryData
     reportData["applicationSummaryData"] = applicationSummaryData
     reportData["projectInventoryCount"] = projectInventoryCount
+    reportData["totalInventoryCount"] = totalInventoryCount
 
 
     logger.info("Exiting gather_data_for_report")

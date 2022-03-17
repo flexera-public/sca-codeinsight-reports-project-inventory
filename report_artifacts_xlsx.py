@@ -27,6 +27,8 @@ def generate_xlsx_report(reportData):
     projectSummaryData = reportData["projectSummaryData"]
     applicationSummaryData = reportData["applicationSummaryData"]
     projectHierarchy = reportData["projectHierarchy"]
+    projectInventoryCount = reportData["projectInventoryCount"]
+    totalInventoryCount = reportData["totalInventoryCount"]
     
     cvssVersion = projectSummaryData["cvssVersion"]  # 2.0/3.x
     includeComplianceInformation = projectSummaryData["includeComplianceInformation"]  # True/False
@@ -170,12 +172,15 @@ def generate_xlsx_report(reportData):
         # Add project hierarchy view for each summary tab
         for summaryWorksheet in [licenseSummaryWorksheet, vulnerabilitySummaryWorksheet, reviewSummaryWorksheet]:
 
-            summaryWorksheet.merge_range('B4:M4', "Project Hierarchy", tableHeaderFormat)
+            summaryWorksheet.merge_range('B4:R4', "Project Hierarchy (%s Total Items)" %totalInventoryCount, tableHeaderFormat)
             summaryWorksheet.set_column('A:Z', 2)
             summaryWorksheet.hide_gridlines(2)
-            
-            summaryWorksheet.write('C6', projectName, hierarchyCellFormat) # Row 5, column 2
-            display_project_hierarchy(summaryWorksheet, projectHierarchy, 5, 2, hierarchyCellFormat)
+
+            inventoryCount = projectInventoryCount[projectName]
+            projectDetails = projectName + " (" + str(inventoryCount) + " items)"
+           
+            summaryWorksheet.write('C6', projectDetails, hierarchyCellFormat) # Row 5, column 2
+            display_project_hierarchy(summaryWorksheet, projectHierarchy, 5, 2, hierarchyCellFormat, projectInventoryCount)
 
 
         # Create the charts now
@@ -482,7 +487,7 @@ def generate_xlsx_report(reportData):
     return xlsxFile
 
 #------------------------------------------------------------#
-def display_project_hierarchy(worksheet, parentProject, row, column, boldCellFormat):
+def display_project_hierarchy(worksheet, parentProject, row, column, boldCellFormat, projectInventoryCount):
 
     column +=1 #  We are level down so we need to indent
     row +=1
@@ -494,9 +499,12 @@ def display_project_hierarchy(worksheet, parentProject, row, column, boldCellFor
         
         for childProject in childProjects:
             projectName = childProject["name"]
+            inventoryCount = projectInventoryCount[projectName]
+
             # Add this ID to the list of projects with other child projects
             # and get then do it again
-            worksheet.write( row, column, projectName, boldCellFormat)
+            projectDetails = projectName + " (" + str(inventoryCount) + " items)"
+            worksheet.write( row, column, projectDetails, boldCellFormat)
 
-            row =  display_project_hierarchy(worksheet, childProject, row, column, boldCellFormat)
+            row =  display_project_hierarchy(worksheet, childProject, row, column, boldCellFormat, projectInventoryCount)
     return row
