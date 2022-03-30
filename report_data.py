@@ -32,6 +32,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     inventoryData = {}  # Create a dictionary containing the inventory data using inventoryID as keys
     projectData = {} # Create a dictionary containing the project level summary data using projectID as keys
     licenseDetails = {} # Dictionary to store license details to avoid multiple lookups for same id
+    projectReviewStatus = {}
     totalInventoryCount = 0
 
     # Get the list of parent/child projects start at the base project
@@ -250,6 +251,17 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
         projectData[projectName]["numP3Licenses"] = projectInformation["licenses"]["P3"]
         projectData[projectName]["numNALicenses"] = projectInformation["licenses"]["Unknown"]
 
+        # Determine the state of the project based on the "worst" status of inventory
+        if numRejected > 0:
+            project.update({"projectReviewStatus": "Rejected"})
+            projectReviewStatus[projectID] = "Rejected"
+        elif numDraft > 0:
+            project.update({"projectReviewStatus": "Draft"})
+            projectReviewStatus[projectID] = "Draft"
+        else:
+            project.update({"projectReviewStatus": "Approved"})
+            projectReviewStatus[projectID] = "Approved"
+
         if cvssVersion == "3.x":
             projectData[projectName]["numCriticalVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["Critical"]
             projectData[projectName]["numHighVulnerabilities"] = projectInformation["vulnerabilities"]["CvssV3"]["High"]
@@ -272,6 +284,9 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     # Roll up the individual project data to the application level
     applicationSummaryData = create_application_summary_data_dict(projectSummaryData)
 
+    # Roll up the project review status based on the status of child projects
+    projectReviewStatus = roll_up_project_review_level(projectHierarchy, projectReviewStatus, 1)
+
     # Build up the data to return for the
     reportData = {}
     reportData["reportName"] = reportName
@@ -284,6 +299,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     reportData["applicationSummaryData"] = applicationSummaryData
     reportData["projectInventoryCount"] = projectInventoryCount
     reportData["totalInventoryCount"] = totalInventoryCount
+    reportData["projectReviewStatus"] = projectReviewStatus
 
 
     logger.info("Exiting gather_data_for_report")
@@ -426,8 +442,45 @@ def getVersionDetails(componentVersionName, componentID, baseURL, authToken):
 
     return componentVersionDetails
 
+#----------------------------------------------------------------------------------------#
+def roll_up_project_review_level(projectHierarchy, projectReviewStatus, recursionLevel):
+    recursionIndent = recursionLevel * " "
+    logger.debug("%s Entering roll_up_project_review_level" %recursionIndent)
 
+    parentProjectID = projectHierarchy['id']
+    parentProjectName = projectHierarchy['name']
+    parentProjectReviewStatus = projectReviewStatus[parentProjectID]
 
+    logger.debug("%s %s - Initial project review status: %s" %(recursionIndent, parentProjectName, parentProjectReviewStatus))
+
+    childProject = projectHierarchy["childProject"]
+
+    recursionLevel +=1
+    recursionIndent = recursionLevel * " "
+
+    for project in childProject:
+
+        # Get the most recent value for the parent project review status in case a child already changed it
+        parentProjectReviewStatus = projectReviewStatus[parentProjectID]
+      
+        projectReviewStatus = roll_up_project_review_level(project, projectReviewStatus, recursionLevel)
+
+        childProjectID = project["id"]
+        childProjectReviewSatus = projectReviewStatus[childProjectID]
+
+        logger.debug("%s %s - Current project review status: %s   Current child status:  %s" %(recursionIndent, parentProjectName, parentProjectReviewStatus, childProjectReviewSatus))
+
+        # Does the parent project status need to change to the a child project?
+        if childProjectReviewSatus == "Rejected":
+            logger.debug("        Change %s to rejected" %parentProjectName)
+            projectReviewStatus[parentProjectID] = "Rejected"
+        elif childProjectReviewSatus == "Draft" and parentProjectReviewStatus == "Approved":
+            logger.debug("        Change %s to draft" %parentProjectName)
+            projectReviewStatus[parentProjectID] = "Draft"
+
+    logger.debug("%s %s - Final project review status: %s" %(recursionIndent, parentProjectName, parentProjectReviewStatus))
+    
+    return projectReviewStatus
 
 
 
