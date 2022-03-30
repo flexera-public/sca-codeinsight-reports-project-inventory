@@ -20,6 +20,7 @@ def generate_xlsx_report(reportData):
     logger.info("    Entering generate_xlsx_report")
 
     projectName = reportData["projectName"]
+    projectID = reportData["projectID"]
     reportFileNameBase = reportData["reportFileNameBase"]
     reportTimeStamp =  reportData["reportTimeStamp"] 
     inventoryData = reportData["inventoryData"]
@@ -29,6 +30,7 @@ def generate_xlsx_report(reportData):
     projectHierarchy = reportData["projectHierarchy"]
     projectInventoryCount = reportData["projectInventoryCount"]
     totalInventoryCount = reportData["totalInventoryCount"]
+    projectReviewStatus = reportData["projectReviewStatus"]
     
     cvssVersion = projectSummaryData["cvssVersion"]  # 2.0/3.x
     includeComplianceInformation = projectSummaryData["includeComplianceInformation"]  # True/False
@@ -58,7 +60,11 @@ def generate_xlsx_report(reportData):
     cellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.standardCellFormatProperties)
     cellLinkFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.linkCellFormatProperties)
     hierarchyCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.hierarchyCellFormatProperties)
+    approvedHierarchyCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.approvedHierarchyCellFormatProperties)
+    rejectedHierarchyCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.rejectedHierarchyCellFormatProperties)
+
     tableHeaderFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.tableHeaderFormatProperties)
+
     # Vulnerability formats
     criticalVulnerabilityCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.criticalVulnerabilityCellFormat)
     highVulnerabilityCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.highVulnerabilityCellFormat)
@@ -178,9 +184,21 @@ def generate_xlsx_report(reportData):
 
             inventoryCount = projectInventoryCount[projectName]
             projectDetails = projectName + " (" + str(inventoryCount) + " items)"
+
+            reviewStatus = projectReviewStatus[projectID]
+
+            if reviewStatus == "Approved":
+                cellFormat = approvedHierarchyCellFormat
+
+            elif reviewStatus == "Rejected":
+                cellFormat = rejectedHierarchyCellFormat
+
+            else:
+                cellFormat = hierarchyCellFormat
+
            
-            summaryWorksheet.write('C6', projectDetails, hierarchyCellFormat) # Row 5, column 2
-            display_project_hierarchy(summaryWorksheet, projectHierarchy, 5, 2, hierarchyCellFormat, projectInventoryCount)
+            summaryWorksheet.write('C6', projectDetails, cellFormat) # Row 5, column 2
+            display_project_hierarchy(summaryWorksheet, projectHierarchy, 5, 2, hierarchyCellFormat, approvedHierarchyCellFormat, rejectedHierarchyCellFormat, projectInventoryCount, projectReviewStatus)
 
 
         # Create the charts now
@@ -487,7 +505,8 @@ def generate_xlsx_report(reportData):
     return xlsxFile
 
 #------------------------------------------------------------#
-def display_project_hierarchy(worksheet, parentProject, row, column, boldCellFormat, projectInventoryCount):
+def display_project_hierarchy(worksheet, parentProject, row, column, hierarchyCellFormat, approvedHierarchyCellFormat, rejectedHierarchyCellFormat, projectInventoryCount, projectReviewStatus):
+
 
     column +=1 #  We are level down so we need to indent
     row +=1
@@ -500,11 +519,21 @@ def display_project_hierarchy(worksheet, parentProject, row, column, boldCellFor
         for childProject in childProjects:
             projectName = childProject["name"]
             inventoryCount = projectInventoryCount[projectName]
+            reviewStatus = projectReviewStatus[childProject["id"]]
+
+            if reviewStatus == "Approved":
+                cellFormat = approvedHierarchyCellFormat
+
+            elif reviewStatus == "Rejected":
+                cellFormat = rejectedHierarchyCellFormat
+
+            else:
+                cellFormat = hierarchyCellFormat
 
             # Add this ID to the list of projects with other child projects
             # and get then do it again
             projectDetails = projectName + " (" + str(inventoryCount) + " items)"
-            worksheet.write( row, column, projectDetails, boldCellFormat)
+            worksheet.write( row, column, projectDetails, cellFormat)
 
-            row =  display_project_hierarchy(worksheet, childProject, row, column, boldCellFormat, projectInventoryCount)
+            row =  display_project_hierarchy(worksheet, childProject, row, column, hierarchyCellFormat, approvedHierarchyCellFormat, rejectedHierarchyCellFormat, projectInventoryCount, projectReviewStatus)
     return row
