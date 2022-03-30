@@ -29,6 +29,7 @@ def generate_html_report(reportData):
     applicationSummaryData = reportData["applicationSummaryData"]
     projectInventoryCount = reportData["projectInventoryCount"]
     totalInventoryCount = reportData["totalInventoryCount"]
+    projectReviewStatus = reportData["projectReviewStatus"]
 
     cvssVersion = projectSummaryData["cvssVersion"]  # 2.0/3.x
     includeComplianceInformation = projectSummaryData["includeComplianceInformation"]  # True/False
@@ -66,6 +67,7 @@ def generate_html_report(reportData):
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
         <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     ''')
 
 
@@ -80,6 +82,27 @@ def generate_html_report(reportData):
     except:
         logger.error("Unable to open %s" %cssFile)
         print("Unable to open %s" %cssFile)
+
+
+   # These should go in the standard css for but now keep them here since 
+   # this is support unique to this report currently
+    html_ptr.write('''
+        .jstree li > a > .jstree-icon 
+        {  
+            display:unset  !important; 
+        }
+        .icon-red {
+            color: red;
+        }
+        .icon-green {
+            color: green;
+        } 
+        .icon-gray {
+            color: gray;
+        }
+        
+        
+        \n''')  
 
 
     html_ptr.write("        </style>\n")  
@@ -370,7 +393,7 @@ def generate_html_report(reportData):
 
     if len(projectList) > 1:
         # Add the js for the project summary stacked bar charts
-        generate_project_hierarchy_tree(html_ptr, projectList, projectInventoryCount)
+        generate_project_hierarchy_tree(html_ptr, projectList, projectInventoryCount, projectReviewStatus)
         # Add the js for the project summary stacked bar charts
         generate_project_summary_charts(html_ptr, projectSummaryData)
     
@@ -593,14 +616,27 @@ def generate_application_summary_chart(html_ptr, applicationSummaryData):
     ''' %(applicationSummaryData["numApproved"], applicationSummaryData["numRejected"], applicationSummaryData["numDraft"]) )
 
 #----------------------------------------------------------------------------------------#
-def generate_project_hierarchy_tree(html_ptr, projectHierarchy, projectInventoryCount):
+def generate_project_hierarchy_tree(html_ptr, projectHierarchy, projectInventoryCount, projectReviewStatus):
     logger.info("Entering generate_project_hierarchy_tree")
+
+    draftIcon = "bi-dash-circle icon-gray"
+    approvedIcon = "bi-check-circle-fill icon-green"
+    rejectedIcon = "bi-x-circle-fill icon-red"
+
 
     html_ptr.write('''var hierarchy = [\n''')
 
     for project in projectHierarchy:
 
         inventoryCount = projectInventoryCount[project["projectName"]]
+        reviewStatus = projectReviewStatus[project["projectID"]]
+
+        if reviewStatus == "Approved":
+            projectReviewStatusIcon = approvedIcon
+        elif reviewStatus == "Draft":
+            projectReviewStatusIcon  = draftIcon
+        else:
+            projectReviewStatusIcon = rejectedIcon
         
         # is this the top most parent or a child project with a parent
         if "uniqueID" in project:
@@ -611,11 +647,12 @@ def generate_project_hierarchy_tree(html_ptr, projectHierarchy, projectInventory
         html_ptr.write('''{
             'id': '%s', 
             'parent': '%s', 
-            'text': '%s',
+            'text': '%s (%s items)',
+            'icon': '%s',
             'a_attr': {
                 'href': '%s'
             }
-        },\n'''  %(projectIdentifier, project["parent"], project["projectName"] + " (" + str(inventoryCount) + " items)" , project["projectLink"]))
+        },\n'''  %(projectIdentifier, project["parent"], project["projectName"], inventoryCount, projectReviewStatusIcon, project["projectLink"]))
 
     html_ptr.write('''\n]''')
 
