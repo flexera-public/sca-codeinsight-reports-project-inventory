@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.9] - 2022-03-30
+### Added
+- Inventory roll up colors for project hierarchy
+
 ## [6.0.8] - 2022-02-10
 ### Added
 - Support for self signed certificates
