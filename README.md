@@ -5,6 +5,7 @@ The `sca-codeinsight-reports-project-inventory` repository is a example report f
 This repository utilizes the following via CDN for the creation of the report artifacts.
 
 -  [Bootstrap](https://getbootstrap.com/)
+-  [Bootstrap Icons](https://icons.getbootstrap.com/)
 -  [DataTables](https://datatables.net/)
 -  [chart.js](https://www.chartjs.org/)
 -  [jsTree](https://www.jstree.com/)
