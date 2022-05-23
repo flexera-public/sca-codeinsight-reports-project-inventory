@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.10] - 2022-05-23
+### Fixed
+- Registration updates
+
 ## [6.0.9] - 2022-03-30
 ### Added
 - Inventory roll up colors for project hierarchy
