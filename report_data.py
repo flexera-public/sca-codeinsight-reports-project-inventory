@@ -419,24 +419,32 @@ def getVersionDetails(componentVersionName, componentID, baseURL, authToken):
 
         if versionName.lower() not in ignoreVersions:
             componentVersions.append(versionName)
+        else:
+            logger.warning("        The version %s is contained in the ingnoreVersions list" %versionName)
 
-    
     componentVersions = sorted(componentVersions)
-    
     totalNumberVersions = len(componentVersions)
 
-    try:
-        selectedVersionIndex = componentVersions.index(componentVersionName)
-        numberVersionsBack = totalNumberVersions-selectedVersionIndex+1 # How far back from most recent release
-    except:
-        logger.error("    versionName %s is not a valid version for the component with ID %s" %(componentVersionName, componentID))
-        numberVersionsBack = -1
+    if totalNumberVersions > 0:
+        # There is at least one version available
+        try:
+            selectedVersionIndex = componentVersions.index(componentVersionName)
+            numberVersionsBack = totalNumberVersions-selectedVersionIndex+1 # How far back from most recent release
+        except:
+            logger.error("    versionName %s is not a valid version for the component with ID %s" %(componentVersionName, componentID))
+            numberVersionsBack = -1
     
+        componentVersionDetails["latestVersion"] = componentVersions[-1]
+        componentVersionDetails["numberVersionsBack"] = numberVersionsBack
 
+    else:
+        # The version that was selected must be in the ignoreVersions list above
+        componentVersionDetails["totalNumberVersions"] = 1
+        componentVersionDetails["latestVersion"] = componentVersionName
+        componentVersionDetails["numberVersionsBack"] = 0
+
+    
     componentVersionDetails["currentVersion"] = componentVersionName
-    componentVersionDetails["latestVersion"] = componentVersions[-1]
-    componentVersionDetails["numberVersionsBack"] = numberVersionsBack
-    componentVersionDetails["totalNumberVersions"] = totalNumberVersions
   
     logger.debug("        componentVersionDetails: %s" %componentVersionDetails)    
 
