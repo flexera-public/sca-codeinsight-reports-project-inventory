@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.12] - 2022-11-03
+### Fixed
+- Natural sort for versions back
+
 ## [6.0.11] - 2022-09-28
 ### Fixed
 - Updated requirements for common report env
