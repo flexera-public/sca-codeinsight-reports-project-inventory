@@ -8,7 +8,7 @@ Created On : Fri Aug 07 2020
 File : report_data.py
 '''
 
-import logging
+import logging, re
 
 import CodeInsight_RESTAPIs.project.get_child_projects
 import CodeInsight_RESTAPIs.project.get_project_information
@@ -422,14 +422,24 @@ def getVersionDetails(componentVersionName, componentID, baseURL, authToken):
         else:
             logger.warning("        The version %s is contained in the ingnoreVersions list" %versionName)
 
-    componentVersions = sorted(componentVersions)
+    componentVersions.sort(key=natural_sort)
+
+    # In case there is a combination of version types 1.2 vs snapshot etc
+    # move the ones starting with text to the begining of the list
+    insertLocation = 0
+    for version in componentVersions:
+        if version[0].isalpha():
+            componentVersions.remove(version)
+            componentVersions.insert(insertLocation , version)
+            insertLocation +=1
+
     totalNumberVersions = len(componentVersions)
 
     if totalNumberVersions > 0:
         # There is at least one version available
         try:
             selectedVersionIndex = componentVersions.index(componentVersionName)
-            numberVersionsBack = totalNumberVersions-selectedVersionIndex+1 # How far back from most recent release
+            numberVersionsBack = totalNumberVersions-selectedVersionIndex - 1 # How far back from most recent release
         except:
             logger.error("    versionName %s is not a valid version for the component with ID %s" %(componentVersionName, componentID))
             numberVersionsBack = -1
@@ -490,6 +500,15 @@ def roll_up_project_review_level(projectHierarchy, projectReviewStatus, recursio
     
     return projectReviewStatus
 
+#-----------------------------
+#  These two functions are used for naturally sorting the version names
+#  which was pulled from the web
+#  https://www.tutorialspoint.com/How-to-correctly-sort-a-string-with-a-number-inside-in-Python
 
+def atoi(text):
+    return int(text) if text.isdigit() else text
+
+def natural_sort(text):
+    return [ atoi(c) for c in re.split('(\d+)',text) ]
 
     
