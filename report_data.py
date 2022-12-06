@@ -428,7 +428,7 @@ def getVersionDetails(componentVersionName, componentID, baseURL, authToken):
     # move the ones starting with text to the begining of the list
     insertLocation = 0
     for version in componentVersions:
-        if version[0].isalpha():
+        if len(version) and version[0].isalpha():
             componentVersions.remove(version)
             componentVersions.insert(insertLocation , version)
             insertLocation +=1
