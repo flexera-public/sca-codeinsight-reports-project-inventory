@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.0] - 2023-02-01
+### Changed
+- Logo update
+
 ## [6.0.13] - 2022-12-06
 ### Fixed
 - Support for component versions without a name
