@@ -7,4 +7,4 @@ Author : sgeary
 Created On : Tue Sep 01 2020
 File : _version.py
 '''
-__version__ = "6.1.0"
+__version__ = "6.2.0"
