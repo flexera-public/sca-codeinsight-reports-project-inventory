@@ -1,0 +1,46 @@
+{
+    "reportName" : "Project Inventory Report",
+    "enableProjectPickerValue" : "false",
+    "reportOptions" : {
+        "option1" : 
+        {
+            "name" : "includeChildProjects",
+            "label" : "Include child project data? (True/False)",
+            "description" : "Should the report include data from child projects? <b>(True/False)</b>",
+            "type" : "string",
+            "defaultValue" : "True",
+            "required" : "true",
+            "order" : "1"
+        },
+        "option2" : 
+        {
+            "name" : "includeComplianceInformation",
+            "label" : "Include compliance details? (True/False)",
+            "description" : "Should the report include compliance related data? <b>(True/False)",
+            "type" : "string",
+            "defaultValue" : "True",
+            "required" : "true",
+            "order" : "2"
+        },
+        "option3" : 
+        {
+            "name" : "maxVersionsBack",
+            "label" : "Maxium number of newer versions? (Integer Number)",
+            "description" : "How many versions behind the most recent release of a component is allowable for compliance?",
+            "type" : "string",
+            "defaultValue" : "10",
+            "required" : "true",
+            "order" : "3"
+        },
+        "option4" : 
+        {
+            "name" : "cvssVersion",
+            "label" : "CVSS Version (2.0/3.x)",
+            "description" : "What version of CVSS scoring to report on? <b>(2.0/3.x)</b>",
+            "type" : "string",
+            "defaultValue" : "3.x",
+            "required" : "true",
+            "order" : "4"
+        }        
+    }
+}
