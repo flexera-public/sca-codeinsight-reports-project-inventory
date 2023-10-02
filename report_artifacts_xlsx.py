@@ -11,7 +11,7 @@ File : report_artifacts_xlsx.py
 import logging
 import xlsxwriter
 
-import report_branding.xlsx.xlsx_formatting
+import common.branding.xlsx.xlsx_formatting
 import _version
 
 logger = logging.getLogger(__name__)
@@ -57,26 +57,26 @@ def generate_xlsx_report(reportData):
     dataWorksheet = workbook.add_worksheet('Chart Data')
 
     # Cell formats
-    cellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.standardCellFormatProperties)
-    cellLinkFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.linkCellFormatProperties)
-    hierarchyCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.hierarchyCellFormatProperties)
-    approvedHierarchyCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.approvedHierarchyCellFormatProperties)
-    rejectedHierarchyCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.rejectedHierarchyCellFormatProperties)
+    cellFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.standardCellFormatProperties)
+    cellLinkFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.linkCellFormatProperties)
+    hierarchyCellFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.hierarchyCellFormatProperties)
+    approvedHierarchyCellFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.approvedHierarchyCellFormatProperties)
+    rejectedHierarchyCellFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.rejectedHierarchyCellFormatProperties)
 
-    tableHeaderFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.tableHeaderFormatProperties)
+    tableHeaderFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.tableHeaderFormatProperties)
 
     # Vulnerability formats
-    criticalVulnerabilityCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.criticalVulnerabilityCellFormat)
-    highVulnerabilityCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.highVulnerabilityCellFormat)
-    mediumVulnerabilityCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.mediumVulnerabilityCellFormat)
-    lowVulnerabilityCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.lowVulnerabilityCellFormat)
-    unknownVulnerabilityCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.unknownVulnerabilityCellFormat)
+    criticalVulnerabilityCellFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.criticalVulnerabilityCellFormat)
+    highVulnerabilityCellFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.highVulnerabilityCellFormat)
+    mediumVulnerabilityCellFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.mediumVulnerabilityCellFormat)
+    lowVulnerabilityCellFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.lowVulnerabilityCellFormat)
+    unknownVulnerabilityCellFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.unknownVulnerabilityCellFormat)
     # Review formats
-    approvedCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.approvedCellFormat)
-    rejectedCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.rejectedCellFormat)
-    draftCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.draftCellFormat)
+    approvedCellFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.approvedCellFormat)
+    rejectedCellFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.rejectedCellFormat)
+    draftCellFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.draftCellFormat)
     # Compliance format
-    complianceCellFormat = workbook.add_format(report_branding.xlsx.xlsx_formatting.complianceCellFormat)
+    complianceCellFormat = workbook.add_format(common.branding.xlsx.xlsx_formatting.complianceCellFormat)
 
     # Populate the summary data for the charts
     dataWorksheet.write('A8', "Application Summary")
@@ -143,31 +143,31 @@ def generate_xlsx_report(reportData):
 
     # Determine the vulnerability labels
     if cvssVersion == "3.x": 
-        vulnerabilityBarColors = [report_branding.xlsx.xlsx_formatting.criticalVulnColor, 
-                                    report_branding.xlsx.xlsx_formatting.highVulnColor, 
-                                    report_branding.xlsx.xlsx_formatting.mediumVulnColor, 
-                                    report_branding.xlsx.xlsx_formatting.lowVulnColor, 
-                                    report_branding.xlsx.xlsx_formatting.noneVulnColor]
+        vulnerabilityBarColors = [common.branding.xlsx.xlsx_formatting.criticalVulnColor, 
+                                    common.branding.xlsx.xlsx_formatting.highVulnColor, 
+                                    common.branding.xlsx.xlsx_formatting.mediumVulnColor, 
+                                    common.branding.xlsx.xlsx_formatting.lowVulnColor, 
+                                    common.branding.xlsx.xlsx_formatting.noneVulnColor]
         vulnerabiltyDataStartColumn = 5 # Start data in Column F
     else:
-        vulnerabilityBarColors = [report_branding.xlsx.xlsx_formatting.highVulnColor, 
-                                    report_branding.xlsx.xlsx_formatting.mediumVulnColor, 
-                                    report_branding.xlsx.xlsx_formatting.lowVulnColor, 
-                                    report_branding.xlsx.xlsx_formatting.noneVulnColor]
+        vulnerabilityBarColors = [common.branding.xlsx.xlsx_formatting.highVulnColor, 
+                                    common.branding.xlsx.xlsx_formatting.mediumVulnColor, 
+                                    common.branding.xlsx.xlsx_formatting.lowVulnColor, 
+                                    common.branding.xlsx.xlsx_formatting.noneVulnColor]
         vulnerabiltyDataStartColumn = 6 # Start data in Column G
 
 
-    licenseBarColors = [report_branding.xlsx.xlsx_formatting.p1LicenseColor, 
-                            report_branding.xlsx.xlsx_formatting.p2LicenseColor, 
-                            report_branding.xlsx.xlsx_formatting.p3LicenseColor, 
-                            report_branding.xlsx.xlsx_formatting.NALicenseColor]
+    licenseBarColors = [common.branding.xlsx.xlsx_formatting.p1LicenseColor, 
+                            common.branding.xlsx.xlsx_formatting.p2LicenseColor, 
+                            common.branding.xlsx.xlsx_formatting.p3LicenseColor, 
+                            common.branding.xlsx.xlsx_formatting.NALicenseColor]
     licenseDataStartColumn = 1 # B Column is where the data starts
 
 
 
-    reviewStatusBarColors = [report_branding.xlsx.xlsx_formatting.approvedColor, 
-                                report_branding.xlsx.xlsx_formatting.rejectedColor, 
-                                report_branding.xlsx.xlsx_formatting.draftColor]
+    reviewStatusBarColors = [common.branding.xlsx.xlsx_formatting.approvedColor, 
+                                common.branding.xlsx.xlsx_formatting.rejectedColor, 
+                                common.branding.xlsx.xlsx_formatting.draftColor]
     reviewStatusDataStartColumn = 10 # Start data in Column K
 
 

@@ -10,11 +10,11 @@ File : report_data.py
 
 import logging, re
 
-import CodeInsight_RESTAPIs.project.get_child_projects
-import CodeInsight_RESTAPIs.project.get_project_information
-import CodeInsight_RESTAPIs.project.get_inventory_summary
-import CodeInsight_RESTAPIs.license.license_lookup
-import CodeInsight_RESTAPIs.component.get_component_details
+import common.api.project.get_child_projects
+import common.api.project.get_project_information
+import common.api.project.get_inventory_summary
+import common.api.license.license_lookup
+import common.api.component.get_component_details
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     totalInventoryCount = 0
 
     # Get the list of parent/child projects start at the base project
-    projectHierarchy = CodeInsight_RESTAPIs.project.get_child_projects.get_child_projects_recursively(baseURL, projectID, authToken)
+    projectHierarchy = common.api.project.get_child_projects.get_child_projects_recursively(baseURL, projectID, authToken)
 
     # Create a list of project data sorted by the project name at each level for report display  
     # Add details for the parent node
@@ -64,16 +64,16 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
 
         # Get project information with rollup summary data
         try:
-            projectInformation = CodeInsight_RESTAPIs.project.get_project_information.get_project_information_summary(baseURL, projectID, authToken)
+            projectInformation = common.api.project.get_project_information.get_project_information_summary(baseURL, projectID, authToken)
         except:
             logger.error("    No Project Information Returned for %s!" %projectName)
             print("No Project Information Returned for %s." %projectName)
 
         # Get project summary information
         if cvssVersion == "3.x":
-            projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v3_summary(baseURL, projectID, authToken)
+            projectInventorySummary = common.api.project.get_inventory_summary.get_project_inventory_with_v3_summary(baseURL, projectID, authToken)
         else:
-            projectInventorySummary = CodeInsight_RESTAPIs.project.get_inventory_summary.get_project_inventory_with_v2_summary(baseURL, projectID, authToken)
+            projectInventorySummary = common.api.project.get_inventory_summary.get_project_inventory_with_v2_summary(baseURL, projectID, authToken)
         
         if not projectInventorySummary:
             logger.warning("    Project %s contains no inventory items" %projectName)
@@ -117,7 +117,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
             else:
                 if selectedLicenseID != "N/A":  
                     logger.debug("        Fetching license details for %s with ID %s" %(selectedLicenseName, selectedLicenseID ))
-                    licenseInformation = CodeInsight_RESTAPIs.license.license_lookup.get_license_details(baseURL, selectedLicenseID, authToken)
+                    licenseInformation = common.api.license.license_lookup.get_license_details(baseURL, selectedLicenseID, authToken)
                     licenseURL = licenseInformation["url"]
                     spdxIdentifier = licenseInformation["spdxIdentifier"]
                     licensePriority = licenseInformation["priority"]
@@ -402,7 +402,7 @@ def getVersionDetails(componentVersionName, componentID, baseURL, authToken):
     if componentID == "N/A":
         return componentVersionDetails
 
-    versionDetails = CodeInsight_RESTAPIs.component.get_component_details.get_component_details_v3_summary(baseURL, componentID, authToken)
+    versionDetails = common.api.component.get_component_details.get_component_details_v3_summary(baseURL, componentID, authToken)
 
     componentVersionList = versionDetails["data"]["versionList"]
 
