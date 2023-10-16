@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.3.0] - 2023-10-16
+### Changed
+- Move to common submodule with support for tomcat upgrade
+- Update to common 3.6.8 env
+
 ## [6.2.0] - 2023-03-21
 ### Changed
 - Common registration script with registration_config.json file
