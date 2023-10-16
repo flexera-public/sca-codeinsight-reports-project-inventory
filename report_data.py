@@ -19,9 +19,10 @@ import common.api.component.get_component_details
 logger = logging.getLogger(__name__)
 
 #-------------------------------------------------------------------#
-def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOptions):
+def gather_data_for_report(baseURL, projectID, authToken, reportData):
     logger.info("Entering gather_data_for_report")
 
+    reportOptions = reportData["reportOptions"]
     # Parse report options
     includeChildProjects = reportOptions["includeChildProjects"]  # True/False
     includeComplianceInformation = reportOptions["includeComplianceInformation"]  # True/False
@@ -45,6 +46,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     nodeDetails["projectName"] = projectHierarchy["name"]
     nodeDetails["projectID"] = projectHierarchy["id"]
     nodeDetails["projectLink"] = baseURL + "/codeinsight/FNCI#myprojectdetails/?id=" + str(projectHierarchy["id"]) + "&tab=projectInventory"
+    topLevelProjectName = projectHierarchy["name"]
 
     projectList.append(nodeDetails)
 
@@ -288,8 +290,7 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     projectReviewStatus = roll_up_project_review_level(projectHierarchy, projectReviewStatus, 1)
 
     # Build up the data to return for the
-    reportData = {}
-    reportData["reportName"] = reportName
+    reportData["topLevelProjectName"] = topLevelProjectName
     reportData["projectHierarchy"] = projectHierarchy
     reportData["projectName"] = projectHierarchy["name"]
     reportData["projectID"] = projectHierarchy["id"]
@@ -300,7 +301,6 @@ def gather_data_for_report(baseURL, projectID, authToken, reportName, reportOpti
     reportData["projectInventoryCount"] = projectInventoryCount
     reportData["totalInventoryCount"] = totalInventoryCount
     reportData["projectReviewStatus"] = projectReviewStatus
-
 
     logger.info("Exiting gather_data_for_report")
 
