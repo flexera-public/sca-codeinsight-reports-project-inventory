@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.3.1] - 2024-10-09
+### Changed
+-Check for vim-vim component, API takes a long time due to the massive number of versions
+
 ## [6.3.0] - 2023-10-16
 ### Changed
 - Move to common submodule with support for tomcat upgrade

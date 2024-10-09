@@ -200,6 +200,10 @@ def gather_data_for_report(baseURL, projectID, authToken, reportData):
                         # The API call for the versions of linux takes a long time due to teh massive number of versions so bypass
                         logger.debug("Linux kernel so skipping version analysis")
                         complianceIssues["Version not analyzed"] = "This versions for this component have not beeen analyzed. Manual inspection is suggested"
+                    elif componentID == "6682478":  # Is it the vim-vim?
+                        # The API call for the versions of vim-vim takes a long time due to the massive number of versions so bypass
+                        logger.debug("vim-vim so skipping version analysis")
+                        complianceIssues["Version not analyzed"] = "This versions for this component have not beeen analyzed. Manual inspection is suggested"
                     else:
                     #    Determine if there are any issues with the version
                         componentVersionDetails = getVersionDetails(componentVersionName, componentID, baseURL, authToken)
