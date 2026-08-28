@@ -15,6 +15,7 @@ import common.api.project.get_project_information
 import common.api.project.get_inventory_summary
 import common.api.license.license_lookup
 import common.api.component.get_component_details
+import common.api.inventory.get_inventory_details
 
 logger = logging.getLogger(__name__)
 
@@ -107,29 +108,34 @@ def gather_data_for_report(baseURL, projectID, authToken, reportData):
             
             componentName = inventoryItem["componentName"]
             componentID = inventoryItem["componentId"]
+            componentVersionId = inventoryItem.get("componentVersionId", "")
             inventoryPriority = inventoryItem["priority"]
             componentVersionName = inventoryItem["componentVersionName"]
             selectedLicenseID = inventoryItem["selectedLicenseId"]
             selectedLicenseName = inventoryItem["selectedLicenseSPDXIdentifier"]
+
+            # Sentinel values Code Insight uses when no single license is selected
+            # (WIP, Unknown, or a multi-license expression item)
+            isSentinelLicenseID = str(selectedLicenseID) in ("N/A", "-1", "-2", "69")
 
             if selectedLicenseID in licenseDetails.keys():
                 selectedLicenseName = licenseDetails[selectedLicenseID]["selectedLicenseName"]
                 selectedLicenseUrl = licenseDetails[selectedLicenseID]["selectedLicenseUrl"]
                 selectedLicensePriority = licenseDetails[selectedLicenseID]["selectedLicensePriority"]
             else:
-                if selectedLicenseID != "N/A":  
-                    logger.debug("        Fetching license details for %s with ID %s" %(selectedLicenseName, selectedLicenseID ))
+                if not isSentinelLicenseID:
+                    logger.debug("        Fetching license details for %s with ID %s" %(selectedLicenseName, selectedLicenseID))
                     licenseInformation = common.api.license.license_lookup.get_license_details(baseURL, selectedLicenseID, authToken)
                     licenseURL = licenseInformation["url"]
                     spdxIdentifier = licenseInformation["spdxIdentifier"]
                     licensePriority = licenseInformation["priority"]
 
-                    if spdxIdentifier != "" and  spdxIdentifier != "N/A":
+                    if spdxIdentifier != "" and spdxIdentifier != "N/A":
                         licenseName = spdxIdentifier
                     else:
                         licenseName = licenseInformation["shortName"]
 
-                    # There is not specific selected licesne just let it be blank
+                    # There is not specific selected license just let it be blank
                     if licenseName == "I don't know":
                         licenseName = ""
 
@@ -141,12 +147,31 @@ def gather_data_for_report(baseURL, projectID, authToken, reportData):
                     selectedLicenseName = licenseName
                     selectedLicenseUrl = licenseURL
                     selectedLicensePriority = licensePriority
-                     
+
                 else:
                     # Typically a WIP item
                     selectedLicenseName = ""
-                    selectedLicenseUrl = ""     
+                    selectedLicenseUrl = ""
                     selectedLicensePriority = ""
+
+            # For sentinel-ID items, check /inventories/{id} for its license expression
+            # (e.g. "MIT OR Apache-2.0"). Not cached: a single component version can
+            # legitimately have different license expressions across different
+            # inventory items, so the expression must be fetched per inventory item.
+            licenseExpression = ""
+            if isSentinelLicenseID:
+                try:
+                    inventoryItemDetails = common.api.inventory.get_inventory_details.get_inventory_item_details_no_vuln_data(inventoryID, baseURL, authToken)
+                    licenseExpressionDetails = inventoryItemDetails.get("licenseExpressionDetails")
+                    if licenseExpressionDetails:
+                        licenseExpression = licenseExpressionDetails.get("licenseExpression", "") or ""
+                except:
+                    logger.warning("Unable to fetch license expression for inventory item %s." %inventoryItemName)
+
+            # Prefer a resolved license expression over the single-license name
+            if licenseExpression:
+                selectedLicenseName = licenseExpression
+                selectedLicenseUrl = ""
 
             # If there is no specific version just leave it blank
             if componentVersionName == "N/A":
