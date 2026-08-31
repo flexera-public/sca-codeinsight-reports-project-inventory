@@ -307,7 +307,10 @@ def generate_html_report(reportData):
         else:
             html_ptr.write("            <td class='text-left'>%s</td>\n" %(componentVersionName))
 
-        html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(selectedLicenseUrl, selectedLicenseName))
+        if selectedLicenseUrl:
+            html_ptr.write("            <td class='text-left'><a href='%s' target='_blank'>%s</a></td>\n" %(selectedLicenseUrl, selectedLicenseName))
+        else:
+            html_ptr.write("            <td class='text-left'>%s</td>\n" %(selectedLicenseName))
        
         # Write in single line to remove spaces between btn spans
         if numTotalVulnerabilities > 0:

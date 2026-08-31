@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.3.2] - 2026-08-28
+### Changed
+- Inclusion of License Expression
+
+
 ## [6.3.1] - 2024-10-09
 ### Changed
 -Check for vim-vim component, API takes a long time due to the massive number of versions
